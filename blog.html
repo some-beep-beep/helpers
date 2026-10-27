@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Блог — Knopa.by</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8f4f9;
+            color: #2d2a32;
+            line-height: 1.7;
+        }
+
+        .container {
+            max-width: 820px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            padding: 20px 0;
+            border-bottom: 1px solid #f0e8f0;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f27a9c;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #b8a1c4;
+            font-weight: 400;
+        }
+
+        .logo a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .btn-outline {
+            padding: 10px 28px;
+            border: 2px solid #f27a9c;
+            border-radius: 50px;
+            background: transparent;
+            color: #f27a9c;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-outline:hover {
+            background: #f27a9c;
+            color: white;
+        }
+
+        .blog-header {
+            padding: 40px 0 20px;
+            text-align: center;
+        }
+
+        .blog-header h1 {
+            font-size: 38px;
+            font-weight: 800;
+            color: #2d2a32;
+        }
+
+        .blog-header p {
+            color: #6f6377;
+            font-size: 18px;
+            margin-top: 8px;
+        }
+
+        .post {
+            background: white;
+            border-radius: 24px;
+            padding: 35px 40px 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.04);
+            border: 1px solid #f0e8f0;
+            transition: box-shadow 0.2s;
+        }
+
+        .post:hover {
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: #9b8fa3;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+
+        .post-meta .badge {
+            background: #f27a9c;
+            color: white;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .post-meta .badge-green {
+            background: #6fbf8a;
+        }
+
+        .post-meta .badge-blue {
+            background: #7aa9d9;
+        }
+
+        .post-meta .badge-orange {
+            background: #e8a87c;
+        }
+
+        .post-meta .badge-purple {
+            background: #b8a1c4;
+        }
+
+        .post h2 {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            color: #2d2a32;
+        }
+
+        .post h2 a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .post h2 a:hover {
+            color: #f27a9c;
+        }
+
+        .post p {
+            color: #4a4052;
+            font-size: 16px;
+            margin-bottom: 14px;
+        }
+
+        .post p:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .post ul {
+            margin: 12px 0 16px 20px;
+            color: #4a4052;
+            font-size: 16px;
+        }
+
+        .post ul li {
+            margin-bottom: 6px;
+        }
+
+        .post .read-time {
+            display: inline-block;
+            margin-top: 16px;
+            font-size: 14px;
+            color: #9b8fa3;
+            font-weight: 600;
+        }
+
+        .footer {
+            padding: 30px 0;
+            background: #1d1a24;
+            color: #9b8fa3;
+            font-size: 14px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .footer a {
+            color: #d9cedf;
+            text-decoration: none;
+            margin: 0 12px;
+        }
+
+        .footer a:hover {
+            color: #f27a9c;
+        }
+
+        .footer .email-link {
+            color: #f27a9c;
+            font-weight: 600;
+        }
+
+        .footer .email-link:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin: 10px 0 30px;
+            color: #f27a9c;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .intro-block {
+            background: #fcf6f8;
+            border-radius: 24px;
+            padding: 30px 35px;
+            margin-bottom: 40px;
+            border-left: 4px solid #f27a9c;
+        }
+
+        .intro-block p {
+            color: #4a4052;
+            font-size: 16px;
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 600px) {
+            .post {
+                padding: 24px 20px 28px;
+            }
+            .post h2 {
+                font-size: 20px;
+            }
+            .blog-header h1 {
+                font-size: 28px;
+            }
+            .header-inner {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .intro-block {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="container header-inner">
+        <div class="logo"><a href="/">knopa<span>.by</span></a></div>
+        <a href="/" class="btn-outline">На главную</a>
+    </div>
+</header>
+
+<section class="blog-header">
+    <div class="container">
+        <h1>📖 Блог для родителей</h1>
+        <p>Коротко о главном: здоровье, развитие, питание, бизнес</p>
+    </div>
+</section>
+
+<div class="container">
+
+    <div class="intro-block">
+        <p><strong>👋 Добро пожаловать в блог Knopa.by!</strong> Здесь мы пишем о том, что волнует родителей: здоровье детей, развитие, питание, а также вдохновляем историями мам, которые начали свой бизнес в декрете.</p>
+    </div>
+
+    <!-- ====== ПОСТ 1 (бизнес) — 30 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge badge-blue">Бизнес</span>
+            <span>30 июня 2026</span>
+        </div>
+        <h2>Как получить субсидию от государства на бизнес в декрете: история Ольги из Бреста</h2>
+
+        <p>Ольга Швейкус из Бреста всегда была активным человеком. Шесть лет работала в общепите, прошла путь от официанта до администратора. А когда ушла в декрет, решила попробовать себя в бьюти-сфере — записалась на курсы маникюра.</p>
+
+        <p>Сначала это было просто хобби: делала маникюр себе, маме, сестре и даже мужу — тот терпеливо выступал моделью для мужского маникюра. Когда родилась дочка Мирослава, свободного времени стало меньше, но тяга к любимому делу не исчезла. Ольга по ночам изучала новые техники, проходила онлайн-курсы, а когда дочке исполнился год — поехала в Минск на обучение к топ-мастеру из Благовещенска, взяв с собой кормящую дочку.</p>
+
+        <p><strong>Главный поворот:</strong> Ольга узнала, что государство даёт субсидии на открытие бизнеса — до 4700 рублей. В службе занятости помогли с бизнес-планом, научили основам предпринимательства. Она защитила проект перед комиссией и получила деньги на оборудование: стерилизатор, педикюрное кресло, вытяжку.</p>
+
+        <p>Сегодня у Ольги — собственный кабинет в центре Бреста. Она сама планирует график, что особенно важно, пока дочка ходит в садик и часто болеет. «Если человек хочет трудиться, это классные условия, очень удобно. Для начинающих — хороший старт», — говорит она.</p>
+
+        <p><strong>Для тех, кто хочет так же:</strong> субсидии выделяют безработным, которые хотят открыть ИП или заняться ремесленной деятельностью. Обращаться нужно в службу занятости по месту жительства.</p>
+
+        <span class="read-time">⏱ 3 минуты на чтение</span>
+    </article>
+
+    <!-- ====== ПОСТ 2 (развитие) — 28 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge badge-purple">Психология</span>
+            <span>28 июня 2026</span>
+        </div>
+        <h2>Ребенок кусается, щипается, бьет — что делать?</h2>
+
+        <p>С возрастом от 1 до 3 лет многие родители сталкиваются с тем, что ребенок начинает выражать эмоции через физические действия — кусается, щипает, бьет. Это нормальный этап развития, но это не значит, что его нужно игнорировать.</p>
+
+        <p><strong>Почему так происходит?</strong> Малыш еще не умеет говорить о своих чувствах и потребностях. Усталость, голод, перевозбуждение, желание привлечь внимание — любые из этих состояний могут вылиться в укус или удар. Ребенок не делает это "назло" — он просто не знает другого способа сказать "я хочу" или "мне плохо".</p>
+
+        <p><strong>Что делать:</strong></p>
+        <ul>
+            <li><strong>Не отвечайте агрессией на агрессию</strong> — крик и шлепки только подтверждают, что физическая сила работает.</li>
+            <li><strong>Остановите действие и скажите коротко и четко</strong>: "Кусаться больно. Я не разрешаю". Без лекций, только факт.</li>
+            <li><strong>Предложите альтернативу</strong>: хочешь ударить — ударь подушку, хочешь укусить — погрызи прорезыватель.</li>
+            <li><strong>Важно хвалить</strong> моменты, когда ребенок выразил эмоции словами или по-другому. Это закрепляет новую модель поведения.</li>
+        </ul>
+
+        <p>Если агрессивное поведение не проходит и становится нормой — покажите ребенка неврологу или детскому психологу. В большинстве случаев достаточно скорректировать режим и научить ребенка называть эмоции, но иногда нужна профессиональная поддержка.</p>
+
+        <span class="read-time">⏱ 2 минуты на чтение</span>
+    </article>
+
+    <!-- ====== ПОСТ 3 (здоровье) — 25 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge">Здоровье</span>
+            <span>25 июня 2026</span>
+        </div>
+        <h2>Режутся зубы: что норм, а что нет</h2>
+
+        <p>Прорезывание зубов — один из самых волнительных периодов для родителей. Малыш плачет, не спит, тянет всё в рот, и кажется, что процесс никогда не закончится. Но так бывает далеко не у всех, и важно отличать норму от повода для беспокойства.</p>
+
+        <p><strong>Что считается нормой:</strong></p>
+        <ul>
+            <li><strong>Повышенное слюноотделение</strong> — слюни текут ручьём, это нормально.</li>
+            <li><strong>Отказ от еды и беспокойный сон</strong> — зубы давят на десны, а боль усиливается именно в горизонтальном положении.</li>
+            <li><strong>Желание грызть всё подряд</strong> — так ребенок пытается облегчить зуд в деснах.</li>
+            <li><strong>Небольшое повышение температуры до 37,5°C</strong> — допустимо в день прорезывания.</li>
+        </ul>
+
+        <p><strong>Что уже не норма и требует внимания врача:</strong></p>
+        <ul>
+            <li><strong>Температура выше 38°C и держится больше суток</strong> — это не зубы, это инфекция.</li>
+            <li><strong>Понос, рвота, сыпь</strong> — никогда не сопровождают нормальное прорезывание.</li>
+            <li><strong>Ребенок отказывается от воды и не писает</strong> — признак обезвоживания, опасное состояние.</li>
+        </ul>
+
+        <p>Что можно сделать: дать ребенку безопасный прорезыватель (охлажденный, но не ледяной!), использовать гель с лидокаином только по назначению врача и запастись терпением. Первые зубы — это тяжело, но это временно.</p>
+
+        <span class="read-time">⏱ 2 минуты на чтение</span>
+    </article>
+
+    <!-- ====== ПОСТ 4 (бизнес) — 22 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge badge-orange">Бизнес</span>
+            <span>22 июня 2026</span>
+        </div>
+        <h2>Ручной труд в цене: три мамы из Кобрина, которые зарабатывают на хенд-мейде</h2>
+
+        <p>Корреспонденты побывали в Кобрине и нашли трёх мам в декрете, которые превратили хобби в доход.</p>
+
+        <p><strong>Татьяна Горюнова</strong> — домашний кондитер. Её торты — это настоящие съедобные шедевры. Начинала с одного заказа в месяц, и поначалу это были скорее убытки, чем заработок. Но через три года упорной работы у неё появилась постоянная клиентская база. «К каждому торту я отношусь, как к своему детищу, — говорит она. — Идея сначала вынашивается в голове, а потом воплощается. Не всегда так легко, как кажется».</p>
+
+        <p><strong>Юлия Альбун</strong> — вяжет авторские игрушки. Вдохновение пришло случайно — увидела в соцсетях аккаунт мастерицы. Купила пряжу, разобралась в материалах и попробовала. Первую игрушку одобрила строгий критик — дочка. А потом пошли заказы.</p>
+
+        <p><strong>Елена Гордеева</strong> — создаёт аксессуары для волос. Сначала стеснялась, боялась начинать, но потом оформила ремесленничество и начала выставлять работы на продажу. Сегодня её украшения — это кропотливая работа с десятками и сотнями лепестков вручную.</p>
+
+        <p><strong>Вывод корреспондента:</strong> «Ручной труд всегда в цене. Нужно всего лишь определиться, что именно у вас получается лучше всего. Прибыльно там, где сделано с душой».</p>
+
+        <span class="read-time">⏱ 2 минуты на чтение</span>
+    </article>
+
+    <!-- ====== ПОСТ 5 (психология) — 18 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge badge-purple">Психология</span>
+            <span>18 июня 2026</span>
+        </div>
+        <h2>Как маме не выгореть: 5 простых шагов</h2>
+
+        <p>Материнство — это счастье, но иногда оно же становится источником постоянного стресса. Мамы часто забывают о себе, отдавая всё внимание малышу. Как сохранить баланс и не выгореть эмоционально?</p>
+
+        <p><strong>Шаг 1. Разрешите себе паузу.</strong> 15 минут в день только для себя — это не роскошь, а необходимость. Чай без ребенка, ванна или просто посидеть в тишине. Это не значит, что вы плохая мама — это значит, что вы заботитесь о себе.</p>
+
+        <p><strong>Шаг 2. Говорите о своих чувствах.</strong> Делитесь переживаниями с мужем, подругой, мамой. Иногда просто сказать «я устала» вслух — уже облегчает состояние. Не держите всё в себе.</p>
+
+        <p><strong>Шаг 3. Делегируйте.</strong> Вам не обязательно всё делать самой. Пусть муж погуляет с ребенком, бабушка поможет с уборкой, а старшие дети нальют себе воду. Принимайте помощь.</p>
+
+        <p><strong>Шаг 4. Найдите хобби.</strong> Пусть это будет что-то, что приносит радость именно вам. Вязание, чтение, рисование, йога — это напоминает о том, что вы не только мама, но и личность.</p>
+
+        <p><strong>Шаг 5. Просите о помощи.</strong> Это не стыдно. Если чувствуете, что не справляетесь — обратитесь к психологу. Иногда одна консультация меняет взгляд на ситуацию.</p>
+
+        <p>Помните: забота о себе — это не эгоизм. Это ваша опора, без которой сложно давать тепло другим.</p>
+
+        <span class="read-time">⏱ 2 минуты на чтение</span>
+    </article>
+
+    <!-- ====== ПОСТ 6 (здоровье) — 15 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge">Здоровье</span>
+            <span>15 июня 2026</span>
+        </div>
+        <h2>Тактика действий после укуса клеща</h2>
+
+        <p>Сезон клещей в Беларуси длится с апреля по октябрь, и если вы гуляете с ребенком в парке или за городом — риск встретиться с ними есть всегда. Главное — не паниковать и действовать по четкому плану.</p>
+
+        <p><strong>Первое:</strong> если вы заметили клеща на коже, не пытайтесь его вытащить пальцами или маслом. Самый надежный способ — пинцетом или специальным выкручивателем захватить клеща как можно ближе к коже и вытащить круговым движением. Ни в коем случае не давите на брюшко — так вы занесете инфекцию в ранку.</p>
+
+        <p><strong>Второе:</strong> после удаления обработайте место укуса любым антисептиком (хлоргексидин, йод, зеленка). Понаблюдайте за самочувствием ребенка в ближайшие 2–3 недели. Если появилась красная сыпь в виде кольца (мигрирующая эритема) или температура — сразу к врачу.</p>
+
+        <p><strong>Третье:</strong> в Беларуси для детей доступна иммуноглобулинопрофилактика — ее делают в первые 72 часа после укуса. Если вы сомневаетесь, лучше проконсультироваться с педиатром или обратиться в травмпункт.</p>
+
+        <p>И помните: клещей бояться — в лес не ходить. Просто будьте внимательны и знайте, что делать.</p>
+
+        <span class="read-time">⏱ 2 минуты на чтение</span>
+    </article>
+
+    <!-- ====== ПОСТ 7 (сон) — 10 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge badge-green">Сон</span>
+            <span>10 июня 2026</span>
+        </div>
+        <h2>Совместный сон: за и против</h2>
+
+        <p>Вопрос совместного сна — один из самых спорных среди родителей. Одни считают его естественным и удобным, другие — вредной привычкой. Где правда?</p>
+
+        <p><strong>Аргументы «за»:</strong></p>
+        <ul>
+            <li><strong>Удобство грудного вскармливания.</strong> Маме не нужно вставать ночью — достаточно приложить ребенка рядом.</li>
+            <li><strong>Крепкая эмоциональная связь.</strong> Дети, спящие с родителями, чувствуют себя в безопасности.</li>
+            <li><strong>Более спокойный сон.</strong> Мама быстрее реагирует на пробуждение, малыш успокаивается без долгого укачивания.</li>
+        </ul>
+
+        <p><strong>Аргументы «против»:</strong></p>
+        <ul>
+            <li><strong>Риск удушья.</strong> Это главный аргумент педиатров. Уставшая мама может случайно накрыть ребенка одеялом или придавить во сне.</li>
+            <li><strong>Нарушение сна родителей.</strong> Дети часто ворочаются, и качество сна взрослых снижается.</li>
+            <li><strong>Сложности с отучением.</strong> Чем старше ребенок, тем сложнее объяснить, почему теперь он спит отдельно.</li>
+        </ul>
+
+        <p><strong>Что советуют эксперты:</strong></p>
+        <ul>
+            <li>Если вы выбираете совместный сон — делайте его безопасным: твердый матрас, отсутствие лишних подушек и одеял.</li>
+            <li>Не кладите ребенка между собой и мужем, если кто-то из вас курит, употребляет алкоголь или принимает снотворное.</li>
+            <li>Ребенок до года должен спать на спине — это снижает риск СВДС.</li>
+        </ul>
+
+        <p>Главное правило: решение должно быть комфортным для ВСЕЙ семьи. Если мама высыпается, ребенок спокоен, а папа не против — значит, ваш вариант работает.</p>
+
+        <span class="read-time">⏱ 2 минуты на чтение</span>
+    </article>
+
+    <!-- ====== ПОСТ 8 (питание) — 5 июня 2026 ====== -->
+    <article class="post">
+        <div class="post-meta">
+            <span class="badge">Питание</span>
+            <span>5 июня 2026</span>
+        </div>
+        <h2>Начало прикорма: с чего начать и как не навредить</h2>
+
+        <p>ВОЗ рекомендует вводить прикорм не раньше 6 месяцев — к этому моменту пищеварительная система ребенка уже достаточно созрела для новой пищи. Но когда именно начинать и с чего — зависит от самого ребенка.</p>
+
+        <p><strong>Как понять, что ребенок готов:</strong></p>
+        <ul>
+            <li>уверенно сидит с поддержкой или самостоятельно;</li>
+            <li>проявляет интерес к еде с общего стола (тянется, смотрит);</li>
+            <li>не выталкивает ложку языком (угас рефлекс выталкивания);</li>
+            <li>удваивает свой вес с рождения — хороший ориентир.</li>
+        </ul>
+
+        <p><strong>Схема введения:</strong> начинаем с однокомпонентных пюре из гипоаллергенных овощей (кабачок, цветная капуста, брокколи). Вводим продукт маленькими порциями — чайная ложка, затем половинка баночки, постепенно увеличивая объем. Каждый новый продукт даем отдельно, в течение 3–5 дней, чтобы отследить реакцию.</p>
+
+        <p><strong>Важно:</strong> не вводите прикорм, если ребенок болен, плохо себя чувствует или в период вакцинации. И никогда не солите и не сластите детскую еду — почки малыша к этому не готовы, а привычка к сладкому формируется с первых ложек.</p>
+
+        <p>Прикорм — это не гонка. Кто-то начинает с пюре, кто-то с кусочков (BLW). Главное — чтобы ребенок был сыт, спокоен, а процесс приносил радость вам обоим.</p>
+
+        <span class="read-time">⏱ 2 минуты на чтение</span>
+    </article>
+
+    <div style="text-align:center;padding:20px 0 40px;">
+        <a href="/" class="back-link">← Вернуться на главную</a>
+    </div>
+
+</div>
+
+<footer class="footer">
+    <div class="container">
+        <p style="margin-bottom: 8px;">© 2026 knopa.by — платформа для аренды детских товаров в Минске</p>
+        <p>
+            <a href="#" onclick="openModal(); return false;">Сдать вещь</a>
+            <a href="#" onclick="openModal(); return false;">Взять в аренду</a>
+            <a href="/blog.html">Блог</a>
+            <a href="mailto:info@knopa.by" class="email-link">info@knopa.by</a>
+        </p>
+    </div>
+</footer>
+
+<!-- Скрипт модального окна -->
+<script>
+    function openModal() {
+        document.getElementById('modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
+
+<!-- Модальное окно -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <button class="close" onclick="closeModal()">✕</button>
+        <h3>Выберите свой вариант</h3>
+        <p class="sub">Оставьте контакт, чтобы узнать о запуске первым.</p>
+        <form class="cta-form" action="send.php" method="POST">
+            <input type="email" name="email" placeholder="Ваш e-mail" required>
+            <button type="submit" class="btn-primary">Хочу участвовать</button>
+        </form>
+        <p class="tg-link">или напишите нам в Telegram <a href="#">@knopa_by</a></p>
+    </div>
+</div>
+
+<style>
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+    }
+
+    .modal-overlay.active {
+        display: flex;
+    }
+
+    .modal {
+        background: white;
+        padding: 30px 35px 35px;
+        border-radius: 30px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        position: relative;
+    }
+
+    .modal .close {
+        position: absolute;
+        top: 12px;
+        right: 18px;
+        font-size: 26px;
+        cursor: pointer;
+        color: #b8a1c4;
+        background: none;
+        border: none;
+        line-height: 1;
+    }
+
+    .modal h3 {
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 6px;
+    }
+
+    .modal .sub {
+        font-size: 15px;
+        color: #6f6377;
+        margin-bottom: 20px;
+    }
+
+    .modal .cta-form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        max-width: 100%;
+    }
+
+    .modal .cta-form input {
+        width: 100%;
+        padding: 16px 24px;
+        border-radius: 50px;
+        border: 1px solid #d9cedf;
+        font-size: 16px;
+        font-family: inherit;
+        outline: none;
+    }
+
+    .modal .cta-form .btn-primary {
+        background: #f27a9c;
+        color: white;
+        padding: 16px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 18px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 8px 25px rgba(242, 122, 156, 0.3);
+        width: 100%;
+    }
+
+    .modal .cta-form .btn-primary:hover {
+        background: #e05f82;
+        transform: translateY(-2px);
+    }
+
+    .modal .tg-link {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #9b8fa3;
+    }
+
+    .modal .tg-link a {
+        color: #f27a9c;
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+
+</body>
+</html>

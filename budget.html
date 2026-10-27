@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Бюджет</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+            background: #f4f7fb;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        /* ===== НАВИГАЦИЯ (СВЕРХУ) ===== */
+        .nav-bar {
+            width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px 20px;
+            background: white;
+            padding: 16px 40px;
+            border-bottom: 1px solid #e9edf4;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+        .nav-bar:hover {
+            box-shadow: 0 6px 28px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            font-size: 20px;
+            color: #0f172a;
+            letter-spacing: -0.4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-logo span {
+            color: #2563eb;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #1e293b;
+            cursor: pointer;
+            transition: 0.15s ease;
+            text-decoration: none;
+            border: 1px solid transparent;
+            background: #f8fafc;
+        }
+        .nav-btn:hover {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .nav-btn.plan {
+            background: white;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        .nav-btn.plan:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .nav-btn.budget {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            border-color: #2563eb;
+        }
+        .nav-btn.budget:hover {
+            background: #1d4ed8;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+            border-color: #1d4ed8;
+        }
+
+        .nav-btn.moex {
+            background: white;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        .nav-btn.moex:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        @media (max-width: 600px) {
+            .nav-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px 20px;
+                gap: 12px;
+            }
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .nav-btn {
+                flex: 1 0 auto;
+                justify-content: center;
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+        }
+
+        .app-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            padding: 20px 20px 100px 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 28px;
+            padding: 30px 30px 20px;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.07);
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #0b1e32;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .sub {
+            color: #4a5b74;
+            font-size: 15px;
+            border-bottom: 2px solid #eef2f7;
+            padding-bottom: 18px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .rates {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            background: #f8faff;
+            padding: 10px 18px;
+            border-radius: 40px;
+        }
+        .rates label {
+            font-weight: 500;
+            color: #1d334a;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .rates input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid #d9e0ea;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 15px;
+            background: white;
+            text-align: center;
+        }
+        .rates input:focus {
+            outline: 2px solid #4f8cff;
+            border-color: transparent;
+        }
+        .total-budget {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #eaf1fe;
+            padding: 6px 20px 6px 18px;
+            border-radius: 40px;
+        }
+        .total-budget label {
+            font-weight: 600;
+            color: #0b2b4a;
+        }
+        .total-budget input {
+            width: 130px;
+            padding: 8px 12px;
+            border: 1px solid #cbd6e6;
+            border-radius: 30px;
+            font-weight: 700;
+            font-size: 18px;
+            background: white;
+            text-align: center;
+        }
+        .total-budget input:focus {
+            outline: 2px solid #4f8cff;
+            border-color: transparent;
+        }
+        .toolbar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 18px 0 22px;
+        }
+        .btn {
+            background: white;
+            border: 1px solid #d0dbe9;
+            padding: 8px 18px;
+            border-radius: 40px;
+            font-weight: 500;
+            font-size: 14px;
+            color: #1a314b;
+            cursor: pointer;
+            transition: 0.15s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .btn:hover {
+            background: #f0f6ff;
+            border-color: #7fa3e0;
+        }
+        .btn-primary {
+            background: #1f4f8a;
+            border-color: #1f4f8a;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1a3f6e;
+            border-color: #1a3f6e;
+        }
+        .btn-danger {
+            color: #b13b4b;
+            border-color: #f0d7db;
+        }
+        .btn-danger:hover {
+            background: #ffe9ec;
+            border-color: #d97a88;
+        }
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 8px;
+            border-radius: 18px;
+            border: 1px solid #e6ecf5;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 15px;
+            background: white;
+            min-width: 600px;
+        }
+        th {
+            background: #f2f7fe;
+            color: #1a3250;
+            font-weight: 600;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+            padding: 14px 10px 12px;
+            text-align: left;
+            border-bottom: 2px solid #dde5f0;
+        }
+        th:not(:first-child) {
+            text-align: right;
+        }
+        td {
+            padding: 10px 10px;
+            border-bottom: 1px solid #eef3f9;
+            vertical-align: middle;
+        }
+        td:first-child {
+            font-weight: 500;
+            color: #142b42;
+        }
+        td:not(:first-child) {
+            text-align: right;
+        }
+        .editable-input {
+            width: 100%;
+            max-width: 120px;
+            padding: 6px 8px;
+            border: 1px solid #d9e0ea;
+            border-radius: 12px;
+            background: white;
+            font-weight: 600;
+            font-size: 15px;
+            text-align: right;
+            color: #0b223a;
+            transition: 0.1s;
+        }
+        .editable-input:hover {
+            background: #f0f5fe;
+            border-color: #7fa3e0;
+        }
+        .editable-input:focus {
+            outline: 2px solid #4f8cff;
+            border-color: transparent;
+        }
+        .editable-input.currency {
+            max-width: 100px;
+            background: #f5f8ff;
+            cursor: default;
+            border-color: transparent;
+        }
+        .editable-input.currency:hover {
+            background: #f5f8ff;
+            border-color: transparent;
+        }
+        .editable-input.remainder {
+            background: #f0f7ff;
+            font-weight: 700;
+            color: #1a4f7a;
+            border-color: #cbd9ed;
+        }
+        .row-total td {
+            font-weight: 700;
+            border-top: 2px solid #cbd8e9;
+            padding-top: 14px;
+            font-size: 16px;
+            background: #fafdff;
+        }
+        .row-total td:first-child {
+            color: #0b223a;
+        }
+
+        .row-name-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        .row-name-wrapper .name-text {
+            flex: 1;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: 0.1s;
+            min-width: 60px;
+        }
+        .row-name-wrapper .name-text:hover {
+            background: #eef4fc;
+        }
+        .row-name-wrapper .name-input {
+            flex: 1;
+            border: 1px solid #7fa3e0;
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 15px;
+            font-weight: 500;
+            color: #142b42;
+            background: white;
+            outline: none;
+            min-width: 60px;
+        }
+        .row-name-wrapper .name-input:focus {
+            outline: 2px solid #4f8cff;
+        }
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #d32f2f;
+            font-size: 18px;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 4px;
+            line-height: 1.4;
+            transition: 0.15s;
+            opacity: 0.5;
+            flex-shrink: 0;
+            min-width: 30px;
+            text-align: center;
+        }
+        .delete-btn:hover {
+            opacity: 1;
+            background: rgba(211, 47, 47, 0.12);
+        }
+        .delete-btn:disabled {
+            opacity: 0.2;
+            cursor: not-allowed;
+        }
+
+        .footer-info {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            padding: 16px 30px;
+            border-top: 2px solid #e6ecf5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+            font-size: 18px;
+            font-weight: 500;
+            color: #1a2a3a;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+            z-index: 100;
+        }
+        .footer-info .remainder-block {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .footer-info .remainder-label {
+            color: #4a5b74;
+            font-weight: 400;
+        }
+        .footer-info .remainder-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1f4f8a;
+            background: #f0f6ff;
+            padding: 4px 24px;
+            border-radius: 40px;
+            min-width: 120px;
+            text-align: center;
+        }
+
+        .save-notification {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            background: #1f8b4c;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 14px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 999;
+        }
+        .save-notification.show {
+            opacity: 1;
+        }
+
+        .deleting {
+            animation: fadeOut 0.3s ease forwards;
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0; transform: scale(0.95); }
+        }
+
+        @media (max-width: 760px) {
+            .app-wrapper { padding: 10px 10px 90px 10px; }
+            .container { padding: 18px; }
+            .rates { gap: 10px; }
+            .total-budget input { width: 100px; }
+            .footer-info {
+                padding: 12px 18px;
+                font-size: 15px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+            .footer-info .remainder-value {
+                font-size: 22px;
+                min-width: 80px;
+                padding: 4px 16px;
+            }
+            .save-notification {
+                bottom: 80px;
+                right: 15px;
+                font-size: 12px;
+                padding: 10px 16px;
+            }
+            .delete-btn {
+                font-size: 16px;
+                padding: 0 4px;
+                min-width: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ===== НАВИГАЦИЯ ===== -->
+    <nav class="nav-bar">
+        <div class="nav-logo">📊 <span>Portfolio</span></div>
+        <div class="nav-links">
+            <a href="/plan.html" class="nav-btn plan">📋 Plan</a>
+            <a href="/budget.html" class="nav-btn budget">💰 Budget</a>
+            <a href="/MOEX.html" class="nav-btn moex">🏦 MOEX</a>
+        </div>
+    </nav>
+
+    <div class="app-wrapper">
+        <div class="container" id="app">
+            <h1>💰 Бюджет</h1>
+            <div class="sub">
+                <div class="rates">
+                    <label>💵 USD <input type="number" step="0.01" id="usdRate" value="2.9"></label>
+                    <label>💶 EUR <input type="number" step="0.01" id="eurRate" value="3.3"></label>
+                </div>
+                <div class="total-budget">
+                    <label>Всего (BYN)</label>
+                    <input type="number" step="1" id="totalBudget" value="5000">
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <button class="btn btn-primary" id="addRowBtn">➕ Добавить статью</button>
+                <button class="btn btn-danger" id="resetToDefaultBtn">↩️ Сбросить к исходным</button>
+            </div>
+
+            <div class="table-wrap">
+                <table id="budgetTable">
+                    <thead>
+                        <tr>
+                            <th style="min-width:180px;">Статья</th>
+                            <th>BYN</th>
+                            <th>USD</th>
+                            <th>EUR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- строки генерируются js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-info" id="footerInfo">
+        <div class="remainder-block">
+            <span class="remainder-label">📦 Остаток</span>
+            <span class="remainder-value" id="remainderDisplay">0</span>
+            <span style="color:#4a5b74;font-weight:400;">BYN</span>
+        </div>
+    </div>
+
+    <div class="save-notification" id="saveNotification">✅ Данные сохранены</div>
+
+    <script>
+        (function() {
+            const STORAGE_KEY = 'budget_rows';
+            const SETTINGS_KEY = 'budget_settings';
+            const REMAINDER_ID = 'r_remainder';
+
+            const DEFAULT_ROWS = [
+                { id: 'r1', name: '🏠 Квартира', byn: 900 },
+                { id: 'r2', name: '🍽️ Еда', byn: 900 },
+                { id: 'r3', name: '💡 Свет на участке', byn: 135 },
+                { id: 'r4', name: '❤️ Благотворительность', byn: 300 },
+                { id: 'r5', name: '⛽ Бенз', byn: 350 },
+                { id: 'r6', name: '👩 Лиза', byn: 300 },
+                { id: 'r7', name: '📈 Инвестиции', byn: 1716 },
+                { id: 'r8', name: '🛠️ На машину ремонт', byn: 0 },
+                { id: 'r9', name: '💨 Эир подс', byn: 0 },
+                { id: 'r10', name: '🚗 Машину на учет', byn: 0 },
+                { id: 'r11', name: '💳 Кредитка', byn: 0 },
+                { id: 'r12', name: '💸 Потратил просто сразу', byn: 0 }
+            ];
+
+            let rows = [];
+            let counter = 100;
+            let editingNameId = null;
+
+            const tbody = document.getElementById('tableBody');
+            const totalInput = document.getElementById('totalBudget');
+            const usdRateInput = document.getElementById('usdRate');
+            const eurRateInput = document.getElementById('eurRate');
+            const remainderSpan = document.getElementById('remainderDisplay');
+            const saveNotification = document.getElementById('saveNotification');
+
+            function isRemainderRow(row) {
+                return row.id === REMAINDER_ID || (row.name && row.name.includes('Остаток'));
+            }
+
+            function getEditableRows() {
+                return rows.filter(r => !isRemainderRow(r));
+            }
+
+            function saveToStorage() {
+                try {
+                    const editableRows = getEditableRows();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(editableRows));
+                    const settings = {
+                        totalBudget: parseFloat(totalInput.value) || 5000,
+                        usdRate: parseFloat(usdRateInput.value) || 2.9,
+                        eurRate: parseFloat(eurRateInput.value) || 3.3
+                    };
+                    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+                    showSaveNotification();
+                } catch (e) {
+                    console.warn('Ошибка сохранения в localStorage:', e);
+                }
+            }
+
+            function loadFromStorage() {
+                try {
+                    const storedRows = localStorage.getItem(STORAGE_KEY);
+                    if (storedRows) {
+                        const parsed = JSON.parse(storedRows);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            rows = parsed.filter(r => !isRemainderRow(r));
+                            const maxId = rows.reduce((max, r) => {
+                                const num = parseInt(String(r.id).replace('r', ''), 10);
+                                return !isNaN(num) && num > max ? num : max;
+                            }, 100);
+                            counter = maxId + 1;
+                        } else {
+                            rows = DEFAULT_ROWS.map(r => ({ ...r }));
+                        }
+                    } else {
+                        rows = DEFAULT_ROWS.map(r => ({ ...r }));
+                    }
+
+                    const storedSettings = localStorage.getItem(SETTINGS_KEY);
+                    if (storedSettings) {
+                        const settings = JSON.parse(storedSettings);
+                        totalInput.value = settings.totalBudget || 5000;
+                        usdRateInput.value = settings.usdRate || 2.9;
+                        eurRateInput.value = settings.eurRate || 3.3;
+                    }
+                } catch (e) {
+                    console.warn('Ошибка загрузки из localStorage:', e);
+                    rows = DEFAULT_ROWS.map(r => ({ ...r }));
+                }
+            }
+
+            let notificationTimeout = null;
+
+            function showSaveNotification() {
+                saveNotification.classList.add('show');
+                clearTimeout(notificationTimeout);
+                notificationTimeout = setTimeout(() => {
+                    saveNotification.classList.remove('show');
+                }, 1500);
+            }
+
+            function getRates() {
+                const usd = parseFloat(usdRateInput.value) || 2.9;
+                const eur = parseFloat(eurRateInput.value) || 3.3;
+                return { usd, eur };
+            }
+
+            function getTotalBudget() {
+                return parseFloat(totalInput.value) || 5000;
+            }
+
+            function calcRemainder(rowsData, total) {
+                if (!rowsData || !Array.isArray(rowsData)) return total;
+                const sum = rowsData
+                    .filter(r => !isRemainderRow(r))
+                    .reduce((acc, r) => acc + (parseFloat(r.byn) || 0), 0);
+                return total - sum;
+            }
+
+            function syncRemainderRow() {
+                const total = getTotalBudget();
+                const remainder = calcRemainder(rows, total);
+                const rounded = Math.round(remainder * 100) / 100;
+
+                rows = rows.filter(r => !isRemainderRow(r));
+                rows.push({ id: REMAINDER_ID, name: '📦 Остаток', byn: rounded });
+
+                remainderSpan.textContent = rounded;
+                return rounded;
+            }
+
+            function updateDisplay() {
+                const { usd, eur } = getRates();
+                const remainder = syncRemainderRow();
+
+                const allRows = tbody.querySelectorAll('tr');
+                allRows.forEach(tr => {
+                    const id = tr.dataset.id;
+                    const row = rows.find(r => r.id === id);
+                    if (!row) return;
+
+                    const isRemainder = isRemainderRow(row);
+
+                    const bynInput = tr.querySelector('input[data-field="byn"]');
+                    if (bynInput) {
+                        const val = isRemainder ? remainder : (parseFloat(row.byn) || 0);
+                        bynInput.value = val.toFixed(2);
+                    }
+
+                    const usdInput = tr.querySelector('td:nth-child(3) input');
+                    if (usdInput) {
+                        const val = isRemainder ? (remainder / usd) : ((parseFloat(row.byn) || 0) / usd);
+                        usdInput.value = val.toFixed(2) + ' $';
+                    }
+
+                    const eurInput = tr.querySelector('td:nth-child(4) input');
+                    if (eurInput) {
+                        const val = isRemainder ? (remainder / eur) : ((parseFloat(row.byn) || 0) / eur);
+                        eurInput.value = val.toFixed(2) + ' €';
+                    }
+                });
+
+                saveToStorage();
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            function handleDeleteRow(id) {
+                const row = rows.find(r => r.id === id);
+                if (!row || isRemainderRow(row)) return;
+
+                const tr = tbody.querySelector(`tr[data-id="${id}"]`);
+                if (tr) {
+                    tr.classList.add('deleting');
+                    setTimeout(() => {
+                        if (!confirm(`Удалить "${row.name}"?`)) {
+                            tr.classList.remove('deleting');
+                            return;
+                        }
+                        rows = rows.filter(r => r.id !== id);
+                        editingNameId = null;
+                        render();
+                    }, 200);
+                } else {
+                    if (!confirm(`Удалить "${row.name}"?`)) return;
+                    rows = rows.filter(r => r.id !== id);
+                    editingNameId = null;
+                    render();
+                }
+            }
+
+            function render() {
+                if (!rows || !Array.isArray(rows)) {
+                    rows = DEFAULT_ROWS.map(r => ({ ...r }));
+                }
+
+                const total = getTotalBudget();
+                const { usd, eur } = getRates();
+                const remainder = syncRemainderRow();
+
+                let html = '';
+                rows.forEach(row => {
+                    const bynVal = parseFloat(row.byn) || 0;
+                    const usdVal = (bynVal / usd);
+                    const eurVal = (bynVal / eur);
+
+                    const isRemainder = isRemainderRow(row);
+                    const isEditing = editingNameId === row.id;
+
+                    let rowClass = '';
+                    if (isRemainder) rowClass += ' row-total';
+
+                    const displayByn = isRemainder ? remainder : bynVal;
+                    const displayUsd = isRemainder ? (remainder / usd) : usdVal;
+                    const displayEur = isRemainder ? (remainder / eur) : eurVal;
+
+                    const readonlyAttr = isRemainder ? 'readonly' : '';
+                    const inputClass = isRemainder ? 'editable-input remainder' : 'editable-input';
+
+                    let nameHtml = '';
+                    if (isEditing) {
+                        nameHtml = `<input type="text" class="name-input" value="${escapeHtml(row.name)}" data-id="${row.id}" autofocus />`;
+                    } else {
+                        nameHtml = `<span class="name-text" data-id="${row.id}">${escapeHtml(row.name)}</span>`;
+                    }
+
+                    const deleteBtn = !isRemainder ?
+                        `<button type="button" class="delete-btn" data-id="${row.id}" title="Удалить статью">✕</button>` :
+                        `<button type="button" class="delete-btn" disabled>✕</button>`;
+
+                    html += `<tr class="${rowClass}" data-id="${row.id}">
+                        <td>
+                            <div class="row-name-wrapper">
+                                ${nameHtml}
+                                ${deleteBtn}
+                            </div>
+                        </td>
+                        <td>
+                            <input type="number" step="0.01" class="${inputClass}"
+                                   value="${displayByn.toFixed(2)}" ${readonlyAttr} data-field="byn">
+                        </td>
+                        <td>
+                            <input type="text" class="editable-input currency"
+                                   value="${displayUsd.toFixed(2)} $"
+                                   readonly>
+                        </td>
+                        <td>
+                            <input type="text" class="editable-input currency"
+                                   value="${displayEur.toFixed(2)} €"
+                                   readonly>
+                        </td>
+                    </tr>`;
+                });
+
+                tbody.innerHTML = html;
+
+                document.querySelectorAll('.name-text').forEach(el => {
+                    el.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        const id = this.dataset.id;
+                        const row = rows.find(r => r.id === id);
+                        if (!row || isRemainderRow(row)) return;
+                        editingNameId = id;
+                        render();
+                        setTimeout(() => {
+                            const input = document.querySelector(`.name-input[data-id="${id}"]`);
+                            if (input) {
+                                input.focus();
+                                input.select();
+                            }
+                        }, 50);
+                    });
+                });
+
+                document.querySelectorAll('.name-input').forEach(el => {
+                    el.addEventListener('blur', function() {
+                        saveName(this);
+                    });
+                    el.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            this.blur();
+                        }
+                        if (e.key === 'Escape') {
+                            const id = this.dataset.id;
+                            const row = rows.find(r => r.id === id);
+                            if (row) {
+                                this.value = row.name;
+                            }
+                            editingNameId = null;
+                            render();
+                        }
+                    });
+                });
+
+                function saveName(input) {
+                    const id = input.dataset.id;
+                    const row = rows.find(r => r.id === id);
+                    if (!row) return;
+                    const newName = input.value.trim();
+                    if (newName) {
+                        row.name = newName;
+                    } else {
+                        input.value = row.name;
+                    }
+                    editingNameId = null;
+                    render();
+                }
+
+                document.querySelectorAll('input[data-field="byn"]').forEach(inp => {
+                    if (inp.readonly) return;
+                    inp.addEventListener('change', function() {
+                        const tr = this.closest('tr');
+                        if (!tr) return;
+                        const id = tr.dataset.id;
+                        const row = rows.find(r => r.id === id);
+                        if (!row) return;
+                        const val = parseFloat(this.value);
+                        if (!isNaN(val) && val >= 0) {
+                            row.byn = val;
+                        } else {
+                            row.byn = 0;
+                            this.value = '0.00';
+                        }
+                        updateDisplay();
+                    });
+                });
+
+                saveToStorage();
+            }
+
+            function addRow(name, byn = 0) {
+                const id = 'r' + (counter++);
+                rows = rows.filter(r => !isRemainderRow(r));
+                rows.push({ id, name, byn });
+                render();
+            }
+
+            function resetToDefault() {
+                if (!confirm('Вернуть исходные статьи? Все изменения будут потеряны!')) return;
+                rows = DEFAULT_ROWS.map(r => ({ ...r, id: r.id || ('r' + (counter++)) }));
+                editingNameId = null;
+                render();
+            }
+
+            function init() {
+                loadFromStorage();
+                render();
+
+                tbody.addEventListener('mousedown', function(e) {
+                    const deleteBtn = e.target.closest('.delete-btn:not([disabled])');
+                    if (!deleteBtn) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const id = deleteBtn.dataset.id;
+                    if (id) handleDeleteRow(id);
+                });
+
+                document.getElementById('addRowBtn').addEventListener('click', function() {
+                    const count = rows.filter(r => !isRemainderRow(r)).length + 1;
+                    addRow('📌 Статья ' + count, 0);
+                });
+
+                document.getElementById('resetToDefaultBtn').addEventListener('click', resetToDefault);
+
+                function handleSettingsChange() {
+                    updateDisplay();
+                }
+
+                usdRateInput.addEventListener('change', handleSettingsChange);
+                eurRateInput.addEventListener('change', handleSettingsChange);
+                totalInput.addEventListener('change', handleSettingsChange);
+                usdRateInput.addEventListener('input', handleSettingsChange);
+                eurRateInput.addEventListener('input', handleSettingsChange);
+                totalInput.addEventListener('input', handleSettingsChange);
+            }
+
+            init();
+        })();
+    </script>
+
+</body>
+</html>

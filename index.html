@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knopa.by — Сдавайте детские товары и зарабатывайте</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f8f4f9;
+            color: #2d2a32;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .header {
+            padding: 20px 0;
+            border-bottom: 1px solid #f0e8f0;
+            background: white;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+        }
+
+        .header-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f27a9c;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #b8a1c4;
+            font-weight: 400;
+        }
+
+        .btn-outline {
+            padding: 10px 28px;
+            border: 2px solid #f27a9c;
+            border-radius: 50px;
+            background: transparent;
+            color: #f27a9c;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-outline:hover {
+            background: #f27a9c;
+            color: white;
+        }
+
+        .hero {
+            padding: 60px 0 70px;
+            background: linear-gradient(135deg, #fcf6f8 0%, #f1eaf5 100%);
+            border-radius: 0 0 40px 40px;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .hero-title .highlight {
+            color: #f27a9c;
+            position: relative;
+        }
+
+        .hero-title .highlight::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 5px;
+            width: 100%;
+            height: 12px;
+            background: rgba(242, 122, 156, 0.2);
+            border-radius: 10px;
+            z-index: -1;
+        }
+
+        .hero-desc {
+            font-size: 20px;
+            color: #5a4f61;
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: #f27a9c;
+            color: white;
+            padding: 16px 40px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 8px 25px rgba(242, 122, 156, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background: #e05f82;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(242, 122, 156, 0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #2d2a32;
+            padding: 16px 35px;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 18px;
+            border: 2px solid #d9cedf;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-secondary:hover {
+            border-color: #b8a1c4;
+            background: #f8f4f9;
+        }
+
+        .for-whom {
+            padding: 70px 0;
+            background: white;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .section-sub {
+            text-align: center;
+            color: #6f6377;
+            font-size: 18px;
+            margin-bottom: 50px;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .card {
+            background: #f8f4f9;
+            padding: 35px 30px;
+            border-radius: 24px;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .card:hover {
+            border-color: #f27a9c;
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        }
+
+        .card-icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .card h3 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .card p {
+            color: #5a4f61;
+            font-size: 16px;
+        }
+
+        .how-it-works {
+            padding: 70px 0;
+            background: #fcf6f8;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .step {
+            text-align: center;
+        }
+
+        .step-number {
+            width: 56px;
+            height: 56px;
+            background: #f27a9c;
+            color: white;
+            font-weight: 800;
+            font-size: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .step h4 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .step p {
+            color: #5a4f61;
+            font-size: 15px;
+        }
+
+        .benefits {
+            padding: 70px 0;
+            background: white;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+        }
+
+        .benefit-item {
+            text-align: center;
+            padding: 20px 10px;
+            background: #faf8fb;
+            border-radius: 20px;
+        }
+
+        .benefit-item .emoji {
+            font-size: 36px;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .benefit-item h4 {
+            font-size: 17px;
+        }
+
+        .passive-income {
+            padding: 70px 0;
+            background: linear-gradient(135deg, #f0e8f5 0%, #fcf6f8 100%);
+        }
+
+        .income-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            align-items: center;
+        }
+
+        .income-content h2 {
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .income-content h2 .highlight {
+            color: #f27a9c;
+        }
+
+        .income-content p {
+            font-size: 18px;
+            color: #5a4f61;
+            margin-bottom: 16px;
+        }
+
+        .income-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        .income-list li {
+            padding: 10px 0;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f0e8f0;
+        }
+
+        .income-list li:last-child {
+            border-bottom: none;
+        }
+
+        .income-list .check {
+            color: #f27a9c;
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .income-image {
+            text-align: center;
+        }
+
+        .income-image img {
+            max-width: 100%;
+            border-radius: 24px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+        }
+
+        .cta {
+            padding: 70px 0 80px;
+            background: linear-gradient(135deg, #f27a9c 0%, #d96f8f 100%);
+            color: white;
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 38px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+
+        .cta p {
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 35px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-form {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            max-width: 550px;
+            margin: 0 auto;
+        }
+
+        .cta-form input {
+            flex: 1;
+            min-width: 240px;
+            padding: 16px 24px;
+            border-radius: 50px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .cta-form input::placeholder {
+            color: #b0a5b6;
+        }
+
+        .cta-form .btn-primary {
+            background: #2d2a32;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .cta-form .btn-primary:hover {
+            background: #1d1a24;
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            padding: 30px 0;
+            background: #1d1a24;
+            color: #9b8fa3;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .footer a {
+            color: #d9cedf;
+            text-decoration: none;
+            margin: 0 12px;
+        }
+
+        .footer a:hover {
+            color: #f27a9c;
+        }
+
+        .footer .email-link {
+            color: #f27a9c;
+            font-weight: 600;
+        }
+
+        .footer .email-link:hover {
+            text-decoration: underline;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px 35px 35px;
+            border-radius: 30px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .modal .close {
+            position: absolute;
+            top: 12px;
+            right: 18px;
+            font-size: 26px;
+            cursor: pointer;
+            color: #b8a1c4;
+            background: none;
+            border: none;
+            line-height: 1;
+        }
+
+        .modal h3 {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .modal .sub {
+            font-size: 15px;
+            color: #6f6377;
+            margin-bottom: 20px;
+        }
+
+        .modal .cta-form {
+            flex-direction: column;
+            max-width: 100%;
+        }
+
+        .modal .cta-form input {
+            min-width: auto;
+            width: 100%;
+        }
+
+        .modal .cta-form .btn-primary {
+            width: 100%;
+        }
+
+        .modal .tg-link {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #9b8fa3;
+        }
+
+        .modal .tg-link a {
+            color: #f27a9c;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .modal .tg-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 992px) {
+            .hero-title {
+                font-size: 36px;
+            }
+
+            .hero-desc {
+                max-width: 100%;
+            }
+
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .steps-grid {
+                grid-template-columns: 1fr;
+                max-width: 360px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .income-grid {
+                grid-template-columns: 1fr;
+                text-align: center;
+            }
+
+            .income-list li {
+                justify-content: center;
+            }
+
+            .income-image {
+                order: -1;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .header-inner {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .benefits-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .cta h2 {
+                font-size: 28px;
+            }
+
+            .modal {
+                padding: 25px 20px 28px;
+            }
+
+            .modal h3 {
+                font-size: 20px;
+            }
+
+            .hero-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+    <div class="container header-inner">
+        <div class="logo">knopa<span>.by</span></div>
+        <a href="#" class="btn-outline" onclick="openModal(); return false;">➕ Сдать вещь</a>
+    </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+    <div class="container">
+        <h1 class="hero-title">
+            Сдавайте детские товары в Минске <br><span class="highlight">— и зарабатывайте</span>
+        </h1>
+        <p class="hero-desc">
+            Коляски, автокресла, игрушки и развивашки. Сдавайте вещи, которые уже не нужны,<br> 
+            и получайте доход. А если нужно — берите на время.
+        </p>
+        <div class="hero-buttons">
+            <a href="#" class="btn-primary" onclick="openModal(); return false;">Хочу сдать</a>
+            <a href="#" class="btn-secondary" onclick="openModal(); return false;">Хочу взять</a>
+        </div>
+    </div>
+</section>
+
+<!-- For Whom -->
+<section class="for-whom">
+    <div class="container">
+        <h2 class="section-title">Кому подходит Knopa?</h2>
+        <p class="section-sub">Всё просто: мы создаём пространство для обоих сторон</p>
+        <div class="cards-grid">
+            <div class="card">
+                <span class="card-icon">📦</span>
+                <h3>Для тех, у кого вещи «выросли»</h3>
+                <p>Детский велосипед, качели, игровой центр — сдайте в аренду и заработайте. Вещи приносят пользу, а не пылятся на балконе.</p>
+            </div>
+            <div class="card">
+                <span class="card-icon">👶</span>
+                <h3>Для родителей</h3>
+                <p>Возьмите коляску на лето, автокресло в отпуск или батут на выходные. Не нужно покупать новое и захламлять квартиру.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How it works -->
+<section class="how-it-works">
+    <div class="container">
+        <h2 class="section-title">Как это работает</h2>
+        <p class="section-sub">Три шага к выгодной сделке</p>
+        <div class="steps-grid">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h4>Зарегистрируйтесь</h4>
+                <p>Быстрое создание профиля — и вы в деле.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h4>Найдите или предложите</h4>
+                <p>Разместите объявление или выберите товар в каталоге.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h4>Договоритесь и встретьтесь</h4>
+                <p>Обсудите детали, осмотрите вещь и совершите сделку.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Benefits -->
+<section class="benefits">
+    <div class="container">
+        <h2 class="section-title">Почему Knopa — это выгодно</h2>
+        <p class="section-sub">Четыре простые причины сказать «да»</p>
+        <div class="benefits-grid">
+            <div class="benefit-item">
+                <span class="emoji">💰</span>
+                <h4>Заработок на своих вещах</h4>
+            </div>
+            <div class="benefit-item">
+                <span class="emoji">📦</span>
+                <h4>Свободное место в доме</h4>
+            </div>
+            <div class="benefit-item">
+                <span class="emoji">🛡️</span>
+                <h4>Безопасные сделки</h4>
+            </div>
+            <div class="benefit-item">
+                <span class="emoji">🌱</span>
+                <h4>Экологичная привычка</h4>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Passive Income -->
+<section class="passive-income">
+    <div class="container income-grid">
+        <div class="income-content">
+            <h2>Превратите <span class="highlight">детские вещи</span> в пассивный доход</h2>
+            <p>Вы больше не используете коляску, велосипед или развивающий центр? Пока они пылятся на балконе — кто-то готов заплатить за их использование.</p>
+            <ul class="income-list">
+                <li><span class="check">✓</span> Вещи сами приносят деньги — без вашего активного участия</li>
+                <li><span class="check">✓</span> Не нужно искать клиентов — платформа сама соединяет вас с теми, кому нужен ваш товар</li>
+                <li><span class="check">✓</span> Устанавливайте свою цену и график — полная свобода</li>
+                <li><span class="check">✓</span> Одна вещь может приносить доход снова и снова</li>
+            </ul>
+        </div>
+        <div class="income-image">
+            <img src="toys.png" alt="Детские вещи">
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <div class="container">
+        <h2>Начните зарабатывать уже сегодня</h2>
+        <p>Оставьте email, и мы пришлём приглашение на платформу. Первые 100 подписчиков получат бесплатное размещение на 3 месяца.</p>
+        <form class="cta-form" action="send.php" method="POST">
+            <input type="email" name="email" placeholder="Ваш e-mail" required>
+            <button type="submit" class="btn-primary">Узнать первым</button>
+        </form>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <p style="margin-bottom: 8px;">© 2026 knopa.by — платформа для аренды детских товаров в Минске</p>
+        <p>
+            <a href="#" onclick="openModal(); return false;">Сдать вещь</a>
+            <a href="#" onclick="openModal(); return false;">Взять в аренду</a>
+            <a href="/blog.html">Блог</a>
+            <a href="mailto:info@knopa.by" class="email-link">info@knopa.by</a>
+        </p>
+    </div>
+</footer>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+    <div class="modal">
+        <button class="close" onclick="closeModal()">✕</button>
+        <h3>Выберите свой вариант</h3>
+        <p class="sub">Оставьте контакт, чтобы узнать о запуске первым.</p>
+        <form class="cta-form" action="send.php" method="POST">
+            <input type="email" name="email" placeholder="Ваш e-mail" required>
+            <button type="submit" class="btn-primary">Хочу участвовать</button>
+        </form>
+        <p class="tg-link">или напишите нам в Telegram <a href="#">@knopa_by</a></p>
+    </div>
+</div>
+
+<script>
+    function openModal() {
+        document.getElementById('modal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('modal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.getElementById('modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
+
+</body>
+</html>

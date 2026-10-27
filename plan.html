@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>План расходов · Сентябрь – Декабрь 2026 (BYN)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #f5f7fb; font-family: 'Segoe UI', Roboto, system-ui, sans-serif; padding: 0; display: flex; justify-content: center; }
+
+    /* ===== НАВИГАЦИЯ ===== */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px 20px;
+      background: white;
+      padding: 16px 28px;
+      border-bottom: 1px solid #e9edf4;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      transition: box-shadow 0.2s;
+      margin-bottom: 24px;
+    }
+    .nav-bar:hover { box-shadow: 0 6px 28px rgba(0, 0, 0, 0.08); }
+    .nav-logo { font-weight: 700; font-size: 20px; color: #0f172a; letter-spacing: -0.4px; display: flex; align-items: center; gap: 6px; }
+    .nav-logo span { color: #2563eb; }
+    .nav-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 16px;
+      color: #1e293b;
+      cursor: pointer;
+      transition: 0.15s ease;
+      text-decoration: none;
+      border: 1px solid transparent;
+      background: #f8fafc;
+    }
+    .nav-btn:hover { background: #f1f5f9; border-color: #e2e8f0; transform: translateY(-1px); }
+
+    .nav-btn.plan {
+      background: #2563eb;
+      color: white;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+      border-color: #2563eb;
+    }
+    .nav-btn.plan:hover {
+      background: #1d4ed8;
+      box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+      border-color: #1d4ed8;
+    }
+
+    .nav-btn.budget {
+      background: white;
+      border-color: #e2e8f0;
+      color: #0f172a;
+    }
+    .nav-btn.budget:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    .nav-btn.moex {
+      background: white;
+      border-color: #e2e8f0;
+      color: #0f172a;
+    }
+    .nav-btn.moex:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
+
+    @media (max-width: 600px) {
+      .nav-bar { flex-direction: column; align-items: stretch; padding: 16px 20px; gap: 12px; }
+      .nav-links { justify-content: center; flex-wrap: wrap; }
+      .nav-btn { flex: 1 0 auto; justify-content: center; padding: 12px 16px; font-size: 15px; }
+    }
+
+    /* ===== ОСНОВНОЙ КОНТЕНТ ===== */
+    .container {
+      max-width: 1360px;
+      width: 100%;
+      background: white;
+      border-radius: 32px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+      padding: 30px 25px 40px;
+      margin: 0 20px 40px;
+    }
+    h1 {
+      font-size: 26px;
+      font-weight: 600;
+      color: #0b1b33;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .currency-badge {
+      background: #dce6f0;
+      border-radius: 30px;
+      padding: 2px 16px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1c3f64;
+    }
+    .sub {
+      color: #4a5a72;
+      font-size: 15px;
+      border-left: 3px solid #2a7de1;
+      padding-left: 14px;
+      margin-bottom: 28px;
+      background: #f0f4fe;
+      border-radius: 0 12px 12px 0;
+      line-height: 1.6;
+      padding: 10px 16px;
+    }
+    .sub strong { color: #0b1b33; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+    @media (max-width: 880px) {
+      .grid { grid-template-columns: 1fr; gap: 20px; }
+    }
+    .month-card {
+      background: #ffffff;
+      border-radius: 20px;
+      border: 1px solid #e9edf4;
+      box-shadow: 0 4px 12px rgba(0, 20, 40, 0.02);
+      padding: 18px 18px 12px;
+      transition: 0.2s;
+    }
+    .month-card:hover { border-color: #cbd5e1; }
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      border-bottom: 2px solid #eef2f8;
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .month-name { font-weight: 700; font-size: 20px; color: #122b4a; }
+    .month-badge {
+      background: #eef3fc;
+      padding: 5px 14px;
+      border-radius: 40px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #1f4e8c;
+    }
+    .item-list { list-style: none; }
+    .item-list li {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0 5px;
+      border-bottom: 1px dashed #eef2f8;
+      font-size: 14px;
+      color: #1e2f44;
+    }
+    .item-list li:last-child { border-bottom: none; }
+    .item-list .extra { color: #b33c3c; font-weight: 500; }
+    .item-list .income { color: #1d7a3e; font-weight: 600; }
+    .item-list .total-row {
+      font-weight: 700;
+      font-size: 15px;
+      border-bottom: none;
+      padding-top: 10px;
+      margin-top: 4px;
+      border-top: 2px solid #dce3ed;
+    }
+    .month-result {
+      margin-top: 12px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: #f8faff;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid #e2eaf5;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    .month-result .label { color: #2b405a; }
+    .month-result .value { font-size: 17px; }
+    .positive { color: #1a7a3c; }
+    .negative { color: #bc3a3a; }
+    .zero { color: #7d7d7d; }
+    .summary-section {
+      background: #f0f5fe;
+      border-radius: 24px;
+      padding: 22px 24px;
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .summary-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .summary-label { font-weight: 500; color: #1c3452; font-size: 15px; }
+    .summary-number { font-weight: 700; font-size: 22px; color: #0b1b33; }
+    .summary-number.positive { color: #1a7a3c; }
+    .summary-number.negative { color: #bc3a3a; }
+    .summary-number.zero { color: #7d7d7d; }
+    .verdict {
+      background: #e5f0e9;
+      padding: 14px 22px;
+      border-radius: 60px;
+      font-weight: 600;
+      color: #13542d;
+      font-size: 16px;
+      display: inline-block;
+    }
+    .note {
+      margin-top: 18px;
+      font-size: 15px;
+      color: #3d5270;
+      background: #fafcff;
+      padding: 14px 20px;
+      border-radius: 20px;
+      border: 1px solid #dce5f0;
+    }
+    .note strong { color: #0b1b33; }
+    hr { margin: 24px 0 16px; border: none; border-top: 1px solid #dfe8f2; }
+    .footer {
+      font-size: 14px;
+      color: #6a7d99;
+      text-align: right;
+      margin-top: 12px;
+    }
+    .invest-block {
+      background: #f2f9f0;
+      border-radius: 18px;
+      padding: 16px 20px;
+      margin-top: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #d0e4d0;
+      gap: 12px;
+    }
+    .invest-item {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 16px;
+      flex-wrap: wrap;
+    }
+    .invest-item .label { font-weight: 500; color: #1f3f2a; }
+    .invest-item .value { font-weight: 700; font-size: 20px; color: #0b2e1a; }
+    .invest-item .value.usd { color: #1d5b3a; font-size: 17px; }
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-size: 15px;
+      color: #2b405a;
+      background: #f8faff;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 1px solid #e2eaf5;
+    }
+    .total-line strong { color: #0b1b33; }
+  </style>
+</head>
+<body>
+
+<div style="width:100%; display:flex; flex-direction:column; align-items:center;">
+
+  <!-- ===== НАВИГАЦИЯ ===== -->
+  <nav class="nav-bar" style="width:100%;">
+    <div class="nav-logo">📊 <span>Portfolio</span></div>
+    <div class="nav-links">
+      <a href="/plan.html" class="nav-btn plan">📋 Plan</a>
+      <a href="/budget.html" class="nav-btn budget">💰 Budget</a>
+      <a href="/MOEX.html" class="nav-btn moex">🏦 MOEX</a>
+    </div>
+  </nav>
+
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  <div class="container">
+    <h1>
+      📋 План расходов · Сентябрь – Декабрь 2026
+      <span class="currency-badge">BYN</span>
+    </h1>
+    <div class="sub">
+      <strong>Доход:</strong> 8 000 BYN / месяц (в сентябре <strong>+650 BYN</strong> с августа, в октябре <strong>+236 BYN</strong>) · <strong>Всего за 4 месяца:</strong> 32 886 BYN <br>
+      Все суммы в <strong>белорусских рублях (BYN)</strong>. Разовые траты выделены <span style="color:#b33c3c;font-weight:500;">красным</span>.
+      Курс: <strong>1 $ = 3 BYN</strong> · Каждый месяц выходим <strong>в ноль</strong>, остаток направляем в инвестиции.
+    </div>
+
+    <div class="grid">
+      <!-- СЕНТЯБРЬ -->
+      <div class="month-card">
+        <div class="month-header">
+          <span class="month-name">Сентябрь</span>
+          <span class="month-badge">доход 8 650 BYN</span>
+        </div>
+        <ul class="item-list">
+          <li><span>Аренда квартиры</span> <span>900</span></li>
+          <li><span>Бензин</span> <span>250</span></li>
+          <li><span>Еда</span> <span>900</span></li>
+          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
+          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
+          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">1 035,00</span></li>
+          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 000</span></li>
+          <li><span>Благотворительность</span> <span>150</span></li>
+          <li><span>Ребёнок</span> <span>150</span></li>
+          <li><span>Подписки + связь</span> <span>60</span></li>
+          <li><span>Участок (содержание)</span> <span>75</span></li>
+          <li><span>Кредитка (платёж)</span> <span>80</span></li>
+          <li><span>Повседневные траты</span> <span>800</span></li>
+          <li><span>🧘 Йога (жена)</span> <span>100</span></li>
+          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🔴 Расширение участка</span> <span>3 000</span></li>
+          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">4 615 + 3 000 + 1 035 = 8 650</span></li>
+        </ul>
+        <div class="month-result">
+          <span class="label">💰 Результат</span>
+          <span class="value zero">0 BYN</span>
+        </div>
+      </div>
+
+      <!-- ОКТЯБРЬ -->
+      <div class="month-card">
+        <div class="month-header">
+          <span class="month-name">Октябрь</span>
+          <span class="month-badge">доход 8 236 BYN</span>
+        </div>
+        <ul class="item-list">
+          <li><span>Аренда квартиры</span> <span>900</span></li>
+          <li><span>Бензин</span> <span>200</span></li>
+          <li><span>Еда</span> <span>900</span></li>
+          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
+          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
+          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">2 000,00</span></li>
+          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 033</span></li>
+          <li><span>Благотворительность</span> <span>20</span></li>
+          <li><span>Ребёнок</span> <span>200</span></li>
+          <li><span>Подписки + связь</span> <span>60</span></li>
+          <li><span>Участок (содержание)</span> <span>162</span></li>
+          <li><span>Кредитка (платёж)</span> <span>370</span></li>
+          <li><span>Повседневные траты</span> <span>821</span></li>
+          <li><span>🧘 Йога (жена)</span> <span>120</span></li>
+          <li style="font-weight:500; color:#7a4a3a;"><span>🦷 Лечение зубов</span> <span>300</span></li>
+          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🔴 Антикор машины</span> <span>1 000</span></li>
+          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">6 236 + 1 000 + 1 000 = 8 236</span></li>
+        </ul>
+        <div class="month-result">
+          <span class="label">💰 Результат</span>
+          <span class="value zero">0 BYN</span>
+        </div>
+      </div>
+
+      <!-- НОЯБРЬ -->
+      <div class="month-card">
+        <div class="month-header">
+          <span class="month-name">Ноябрь</span>
+          <span class="month-badge">доход 8 000 BYN</span>
+        </div>
+        <ul class="item-list">
+          <li><span>Аренда квартиры</span> <span>900</span></li>
+          <li><span>Бензин</span> <span>250</span></li>
+          <li><span>Еда</span> <span>900</span></li>
+          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
+          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
+          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">1 770,00</span></li>
+          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 000</span></li>
+          <li><span>Благотворительность</span> <span>150</span></li>
+          <li><span>Ребёнок</span> <span>150</span></li>
+          <li><span>Подписки + связь</span> <span>60</span></li>
+          <li><span>Участок (содержание)</span> <span>75</span></li>
+          <li><span>Кредитка (платёж)</span> <span>80</span></li>
+          <li><span>Повседневные траты</span> <span>800</span></li>
+          <li><span>🧘 Йога (жена)</span> <span>100</span></li>
+          <li style="font-weight:500; color:#3a5a3a;"><span>💪 Тренажёрный зал</span> <span>65</span></li>
+          <li style="font-weight:500; color:#7a4a3a;"><span>🦷 Лечение зубов</span> <span>300</span></li>
+          <li style="font-weight:600; color:#8a3a3a;"><span>📋 Налоги</span> <span>250</span></li>
+          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🔴 Оклейка авто пленкой</span> <span>900</span></li>
+          <li class="extra"><span>🔴 Переобувка машины</span> <span>100</span></li>
+          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">5 230 + 1 000 + 1 770 = 8 000</span></li>
+        </ul>
+        <div class="month-result">
+          <span class="label">💰 Результат</span>
+          <span class="value zero">0 BYN</span>
+        </div>
+      </div>
+
+      <!-- ДЕКАБРЬ -->
+      <div class="month-card">
+        <div class="month-header">
+          <span class="month-name">Декабрь</span>
+          <span class="month-badge">доход 8 000 BYN</span>
+        </div>
+        <ul class="item-list">
+          <li><span>Аренда квартиры</span> <span>900</span></li>
+          <li><span>Бензин</span> <span>250</span></li>
+          <li><span>Еда</span> <span>900</span></li>
+          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
+          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
+          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">2 125,00</span></li>
+          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 000</span></li>
+          <li><span>Благотворительность</span> <span>150</span></li>
+          <li><span>Ребёнок</span> <span>150</span></li>
+          <li><span>Подписки + связь</span> <span>60</span></li>
+          <li><span>Участок (содержание)</span> <span>75</span></li>
+          <li><span>Кредитка (платёж)</span> <span>80</span></li>
+          <li><span>Повседневные траты</span> <span>800</span></li>
+          <li><span>🧘 Йога (жена)</span> <span>100</span></li>
+          <li style="font-weight:500; color:#3a5a3a;"><span>💪 Тренажёрный зал</span> <span>65</span></li>
+          <li style="font-weight:500; color:#7a4a3a;"><span>🦷 Лечение зубов</span> <span>300</span></li>
+          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🎁 Подарок жене</span> <span>300</span></li>
+          <li class="extra"><span>🎁 Подарок дочери</span> <span>150</span></li>
+          <li class="extra"><span>🍾 Новогодний стол</span> <span>200</span></li>
+          <li class="extra"><span>🔧 Замена масла + фильтр</span> <span>245</span></li>
+          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">4 980 + 895 + 2 125 = 8 000</span></li>
+        </ul>
+        <div class="month-result">
+          <span class="label">💰 Результат</span>
+          <span class="value zero">0 BYN</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Сводка по месяцам + итог -->
+    <div class="summary-section">
+      <div class="summary-item">
+        <span class="summary-label">Сентябрь</span>
+        <span class="summary-number zero">0 BYN</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Октябрь</span>
+        <span class="summary-number zero">0 BYN</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Ноябрь</span>
+        <span class="summary-number zero">0 BYN</span>
+      </div>
+      <div class="summary-item">
+        <span class="summary-label">Декабрь</span>
+        <span class="summary-number zero">0 BYN</span>
+      </div>
+      <div class="summary-item" style="border-left:2px solid #bccce0; padding-left:18px;">
+        <span class="summary-label">Итоговый баланс</span>
+        <span class="summary-number zero">0 BYN</span>
+      </div>
+    </div>
+
+    <!-- Инвестиции и Отпуск -->
+    <div class="invest-block">
+      <div class="invest-item">
+        <span class="label">📈 Инвестиции (всего за 4 мес.)</span>
+        <span class="value">6 930 BYN</span>
+        <span class="value usd">≈ 2 310,00 $</span>
+      </div>
+      <div class="invest-item">
+        <span class="label">🏖️ Отпуск (всего за 4 мес.)</span>
+        <span class="value">4 033 BYN</span>
+        <span class="value usd">≈ 1 344,33 $</span>
+      </div>
+      <div class="invest-item" style="border-left:2px solid #b8d0b8; padding-left:18px;">
+        <span class="label">💰 Итого инвестиции + отпуск</span>
+        <span class="value">10 963 BYN</span>
+        <span class="value usd">≈ 3 654,33 $</span>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; margin-top:24px;">
+      <div class="verdict">✅ Идеальный план! Каждый месяц в ноль</div>
+      <div style="background:#eef2f8; padding:8px 22px; border-radius:40px; font-size:15px; color:#1c3452;">
+        🎯 Инвестиции + отпуск сохранены
+      </div>
+    </div>
+
+    <div class="note">
+      <strong>📌 Итог:</strong>
+      <ul style="margin-top:8px; padding-left:20px; line-height:1.7;">
+        <li>✅ <strong>Инвестиции:</strong> 6 930 BYN (≈ 2 310,00 $) за 4 месяца</li>
+        <li>✅ <strong>Отпуск:</strong> 4 033 BYN (≈ 1 344,33 $) за 4 месяца</li>
+        <li>✅ <strong>Все разовые траты оплачены</strong> (участок, антикор, пленка, подарки, зубы, масло)</li>
+        <li>✅ <strong>Каждый месяц выходим в ноль</strong> — баланс на конец года 0 BYN</li>
+      </ul>
+    </div>
+
+    <hr>
+    <div class="total-line">
+      <span><strong>Всего доходов:</strong> 32 886 BYN</span>
+      <span><strong>Всего базовых трат (4 мес.):</strong> 20 058 BYN</span>
+      <span><strong>Всего разовых трат:</strong> 5 895 BYN</span>
+      <span><strong>Всего инвестиций:</strong> 6 930 BYN</span>
+      <span><strong>Общий расход:</strong> 32 886 BYN</span>
+    </div>
+    <div class="footer">
+      План составлен 20 августа 2026 · все суммы в BYN · курс <strong>1 $ = 3 BYN</strong>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

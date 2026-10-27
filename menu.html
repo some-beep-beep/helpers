@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Навигация · Budget / MOEX</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+            background: #f4f6fa;
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        /* НАВИГАЦИЯ ПРИБИТА К ВЕРХУ */
+        .nav-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px 20px;
+            background: white;
+            padding: 16px 28px;
+            border-bottom: 1px solid #e9edf4;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            transition: box-shadow 0.2s;
+        }
+        .nav-bar:hover {
+            box-shadow: 0 6px 28px rgba(0, 0, 0, 0.08);
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            font-size: 20px;
+            color: #0f172a;
+            letter-spacing: -0.4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .nav-logo span {
+            color: #2563eb;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: transparent;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #1e293b;
+            cursor: pointer;
+            transition: 0.15s ease;
+            text-decoration: none;
+            border: 1px solid transparent;
+            background: #f8fafc;
+        }
+        .nav-btn:hover {
+            background: #f1f5f9;
+            border-color: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        /* Кнопка Budget — синяя, как в примере */
+        .nav-btn.budget {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            border-color: #2563eb;
+        }
+        .nav-btn.budget:hover {
+            background: #1d4ed8;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35);
+            border-color: #1d4ed8;
+        }
+
+        /* Кнопка MOEX — outline, как в примере */
+        .nav-btn.moex {
+            background: white;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        .nav-btn.moex:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        @media (max-width: 600px) {
+            .nav-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 16px 20px;
+                gap: 12px;
+            }
+            .nav-links {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+            .nav-btn {
+                flex: 1 0 auto;
+                justify-content: center;
+                padding: 12px 16px;
+                font-size: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- НАВИГАЦИЯ ПРИБИТА К ВЕРХУ -->
+    <nav class="nav-bar">
+        <div class="nav-logo">📊 <span>Portfolio</span></div>
+        <div class="nav-links">
+            <!-- Budget → /budget.html -->
+            <a href="/budget.html" class="nav-btn budget">
+                💰 Budget
+            </a>
+            <!-- MOEX → /MOEX.html -->
+            <a href="/MOEX.html" class="nav-btn moex">
+                🏦 MOEX
+            </a>
+        </div>
+    </nav>
+
+</body>
+</html>
