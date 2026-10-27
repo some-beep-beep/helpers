@@ -283,6 +283,21 @@
       border: 1px solid #e2eaf5;
     }
     .total-line strong { color: #0b1b33; }
+    .plan-toolbar {
+      display: flex; flex-wrap: wrap; gap: 12px; align-items: center;
+      justify-content: space-between; margin-bottom: 18px;
+    }
+    .plan-toolbar .sync { font-size: 13px; color: #64748b; }
+    .plan-save-btn {
+      background: #1f4f8a; color: white; border: none; border-radius: 40px;
+      padding: 10px 20px; font-weight: 600; cursor: pointer;
+    }
+    .plan-save-btn:disabled { opacity: 0.6; cursor: default; }
+    .item-list input.amt {
+      width: 90px; text-align: right; border: 1px solid #d0dbe9;
+      border-radius: 8px; padding: 4px 8px; font: inherit;
+    }
+    .item-list .income-row { color: #1d7a3e; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -293,9 +308,9 @@
   <nav class="nav-bar" style="width:100%;">
     <div class="nav-logo">📊 <span>Portfolio</span></div>
     <div class="nav-links">
-      <a href="/plan.html" class="nav-btn plan">📋 Plan</a>
-      <a href="/budget.html" class="nav-btn budget">💰 Budget</a>
-      <a href="/" class="nav-btn moex">🏦 MOEX</a>
+      <a href="plan.html" class="nav-btn plan">📋 Plan</a>
+      <a href="budget.html" class="nav-btn budget">💰 Budget</a>
+      <a href="index.html" class="nav-btn moex">🏦 MOEX</a>
     </div>
   </nav>
 
@@ -305,218 +320,258 @@
       📋 План расходов · Сентябрь – Декабрь 2026
       <span class="currency-badge">BYN</span>
     </h1>
-    <div class="sub">
-      <strong>Доход:</strong> 8 000 BYN / месяц (в сентябре <strong>+650 BYN</strong> с августа, в октябре <strong>+236 BYN</strong>) · <strong>Всего за 4 месяца:</strong> 32 886 BYN <br>
+    <div class="plan-toolbar">
+      <span class="sync" id="planSync">⏳ Загрузка из Google Sheets…</span>
+      <button type="button" class="plan-save-btn" id="planSaveBtn" disabled>💾 Сохранить в Sheets</button>
+    </div>
+    <div class="sub" id="planSub">
       Все суммы в <strong>белорусских рублях (BYN)</strong>. Разовые траты выделены <span style="color:#b33c3c;font-weight:500;">красным</span>.
-      Курс: <strong>1 $ = 3 BYN</strong> · Каждый месяц выходим <strong>в ноль</strong>, остаток направляем в инвестиции.
+      Курс: <strong>1 $ = 3 BYN</strong>.
     </div>
-
-    <div class="grid">
-      <!-- СЕНТЯБРЬ -->
-      <div class="month-card">
-        <div class="month-header">
-          <span class="month-name">Сентябрь</span>
-          <span class="month-badge">доход 8 650 BYN</span>
-        </div>
-        <ul class="item-list">
-          <li><span>Аренда квартиры</span> <span>900</span></li>
-          <li><span>Бензин</span> <span>250</span></li>
-          <li><span>Еда</span> <span>900</span></li>
-          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
-          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
-          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">1 035,00</span></li>
-          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 000</span></li>
-          <li><span>Благотворительность</span> <span>150</span></li>
-          <li><span>Ребёнок</span> <span>150</span></li>
-          <li><span>Подписки + связь</span> <span>60</span></li>
-          <li><span>Участок (содержание)</span> <span>75</span></li>
-          <li><span>Кредитка (платёж)</span> <span>80</span></li>
-          <li><span>Повседневные траты</span> <span>800</span></li>
-          <li><span>🧘 Йога (жена)</span> <span>100</span></li>
-          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🔴 Расширение участка</span> <span>3 000</span></li>
-          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">4 615 + 3 000 + 1 035 = 8 650</span></li>
-        </ul>
-        <div class="month-result">
-          <span class="label">💰 Результат</span>
-          <span class="value zero">0 BYN</span>
-        </div>
-      </div>
-
-      <!-- ОКТЯБРЬ -->
-      <div class="month-card">
-        <div class="month-header">
-          <span class="month-name">Октябрь</span>
-          <span class="month-badge">доход 8 236 BYN</span>
-        </div>
-        <ul class="item-list">
-          <li><span>Аренда квартиры</span> <span>900</span></li>
-          <li><span>Бензин</span> <span>200</span></li>
-          <li><span>Еда</span> <span>900</span></li>
-          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
-          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
-          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">2 000,00</span></li>
-          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 033</span></li>
-          <li><span>Благотворительность</span> <span>20</span></li>
-          <li><span>Ребёнок</span> <span>200</span></li>
-          <li><span>Подписки + связь</span> <span>60</span></li>
-          <li><span>Участок (содержание)</span> <span>162</span></li>
-          <li><span>Кредитка (платёж)</span> <span>370</span></li>
-          <li><span>Повседневные траты</span> <span>821</span></li>
-          <li><span>🧘 Йога (жена)</span> <span>120</span></li>
-          <li style="font-weight:500; color:#7a4a3a;"><span>🦷 Лечение зубов</span> <span>300</span></li>
-          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🔴 Антикор машины</span> <span>1 000</span></li>
-          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">6 236 + 1 000 + 1 000 = 8 236</span></li>
-        </ul>
-        <div class="month-result">
-          <span class="label">💰 Результат</span>
-          <span class="value zero">0 BYN</span>
-        </div>
-      </div>
-
-      <!-- НОЯБРЬ -->
-      <div class="month-card">
-        <div class="month-header">
-          <span class="month-name">Ноябрь</span>
-          <span class="month-badge">доход 8 000 BYN</span>
-        </div>
-        <ul class="item-list">
-          <li><span>Аренда квартиры</span> <span>900</span></li>
-          <li><span>Бензин</span> <span>250</span></li>
-          <li><span>Еда</span> <span>900</span></li>
-          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
-          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
-          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">1 770,00</span></li>
-          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 000</span></li>
-          <li><span>Благотворительность</span> <span>150</span></li>
-          <li><span>Ребёнок</span> <span>150</span></li>
-          <li><span>Подписки + связь</span> <span>60</span></li>
-          <li><span>Участок (содержание)</span> <span>75</span></li>
-          <li><span>Кредитка (платёж)</span> <span>80</span></li>
-          <li><span>Повседневные траты</span> <span>800</span></li>
-          <li><span>🧘 Йога (жена)</span> <span>100</span></li>
-          <li style="font-weight:500; color:#3a5a3a;"><span>💪 Тренажёрный зал</span> <span>65</span></li>
-          <li style="font-weight:500; color:#7a4a3a;"><span>🦷 Лечение зубов</span> <span>300</span></li>
-          <li style="font-weight:600; color:#8a3a3a;"><span>📋 Налоги</span> <span>250</span></li>
-          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🔴 Оклейка авто пленкой</span> <span>900</span></li>
-          <li class="extra"><span>🔴 Переобувка машины</span> <span>100</span></li>
-          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">5 230 + 1 000 + 1 770 = 8 000</span></li>
-        </ul>
-        <div class="month-result">
-          <span class="label">💰 Результат</span>
-          <span class="value zero">0 BYN</span>
-        </div>
-      </div>
-
-      <!-- ДЕКАБРЬ -->
-      <div class="month-card">
-        <div class="month-header">
-          <span class="month-name">Декабрь</span>
-          <span class="month-badge">доход 8 000 BYN</span>
-        </div>
-        <ul class="item-list">
-          <li><span>Аренда квартиры</span> <span>900</span></li>
-          <li><span>Бензин</span> <span>250</span></li>
-          <li><span>Еда</span> <span>900</span></li>
-          <li><span>Коммуналка (кв.1)</span> <span>100</span></li>
-          <li><span>Коммуналка (кв.2)</span> <span>50</span></li>
-          <li style="font-weight:600; color:#0b3b1f;"><span>📈 Инвестиции</span> <span style="font-weight:600;">2 125,00</span></li>
-          <li style="font-weight:600; color:#1f5a8a;"><span>🏖️ Отпуск</span> <span style="font-weight:600;">1 000</span></li>
-          <li><span>Благотворительность</span> <span>150</span></li>
-          <li><span>Ребёнок</span> <span>150</span></li>
-          <li><span>Подписки + связь</span> <span>60</span></li>
-          <li><span>Участок (содержание)</span> <span>75</span></li>
-          <li><span>Кредитка (платёж)</span> <span>80</span></li>
-          <li><span>Повседневные траты</span> <span>800</span></li>
-          <li><span>🧘 Йога (жена)</span> <span>100</span></li>
-          <li style="font-weight:500; color:#3a5a3a;"><span>💪 Тренажёрный зал</span> <span>65</span></li>
-          <li style="font-weight:500; color:#7a4a3a;"><span>🦷 Лечение зубов</span> <span>300</span></li>
-          <li class="extra" style="border-top:2px solid #f0dada; padding-top:10px; margin-top:4px;"><span>🎁 Подарок жене</span> <span>300</span></li>
-          <li class="extra"><span>🎁 Подарок дочери</span> <span>150</span></li>
-          <li class="extra"><span>🍾 Новогодний стол</span> <span>200</span></li>
-          <li class="extra"><span>🔧 Замена масла + фильтр</span> <span>245</span></li>
-          <li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">4 980 + 895 + 2 125 = 8 000</span></li>
-        </ul>
-        <div class="month-result">
-          <span class="label">💰 Результат</span>
-          <span class="value zero">0 BYN</span>
-        </div>
-      </div>
-    </div>
-
-    <!-- Сводка по месяцам + итог -->
-    <div class="summary-section">
-      <div class="summary-item">
-        <span class="summary-label">Сентябрь</span>
-        <span class="summary-number zero">0 BYN</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Октябрь</span>
-        <span class="summary-number zero">0 BYN</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Ноябрь</span>
-        <span class="summary-number zero">0 BYN</span>
-      </div>
-      <div class="summary-item">
-        <span class="summary-label">Декабрь</span>
-        <span class="summary-number zero">0 BYN</span>
-      </div>
-      <div class="summary-item" style="border-left:2px solid #bccce0; padding-left:18px;">
-        <span class="summary-label">Итоговый баланс</span>
-        <span class="summary-number zero">0 BYN</span>
-      </div>
-    </div>
-
-    <!-- Инвестиции и Отпуск -->
-    <div class="invest-block">
-      <div class="invest-item">
-        <span class="label">📈 Инвестиции (всего за 4 мес.)</span>
-        <span class="value">6 930 BYN</span>
-        <span class="value usd">≈ 2 310,00 $</span>
-      </div>
-      <div class="invest-item">
-        <span class="label">🏖️ Отпуск (всего за 4 мес.)</span>
-        <span class="value">4 033 BYN</span>
-        <span class="value usd">≈ 1 344,33 $</span>
-      </div>
-      <div class="invest-item" style="border-left:2px solid #b8d0b8; padding-left:18px;">
-        <span class="label">💰 Итого инвестиции + отпуск</span>
-        <span class="value">10 963 BYN</span>
-        <span class="value usd">≈ 3 654,33 $</span>
-      </div>
-    </div>
-
-    <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:16px; margin-top:24px;">
-      <div class="verdict">✅ Идеальный план! Каждый месяц в ноль</div>
-      <div style="background:#eef2f8; padding:8px 22px; border-radius:40px; font-size:15px; color:#1c3452;">
-        🎯 Инвестиции + отпуск сохранены
-      </div>
-    </div>
-
-    <div class="note">
-      <strong>📌 Итог:</strong>
-      <ul style="margin-top:8px; padding-left:20px; line-height:1.7;">
-        <li>✅ <strong>Инвестиции:</strong> 6 930 BYN (≈ 2 310,00 $) за 4 месяца</li>
-        <li>✅ <strong>Отпуск:</strong> 4 033 BYN (≈ 1 344,33 $) за 4 месяца</li>
-        <li>✅ <strong>Все разовые траты оплачены</strong> (участок, антикор, пленка, подарки, зубы, масло)</li>
-        <li>✅ <strong>Каждый месяц выходим в ноль</strong> — баланс на конец года 0 BYN</li>
-      </ul>
-    </div>
-
-    <hr>
-    <div class="total-line">
-      <span><strong>Всего доходов:</strong> 32 886 BYN</span>
-      <span><strong>Всего базовых трат (4 мес.):</strong> 20 058 BYN</span>
-      <span><strong>Всего разовых трат:</strong> 5 895 BYN</span>
-      <span><strong>Всего инвестиций:</strong> 6 930 BYN</span>
-      <span><strong>Общий расход:</strong> 32 886 BYN</span>
-    </div>
+    <div class="grid" id="planGrid"></div>
+    <div class="summary-section" id="planSummary"></div>
+    <div class="invest-block" id="planInvest"></div>
+    <div class="total-line" id="planTotals" style="margin-top:24px;"></div>
     <div class="footer">
-      План составлен 20 августа 2026 · все суммы в BYN · курс <strong>1 $ = 3 BYN</strong>
+      Данные из Google Sheets · курс <strong>1 $ = 3 BYN</strong>
     </div>
   </div>
 
 </div>
+
+<script src="api.js"></script>
+<script>
+(function () {
+  const MONTH_ORDER = ['Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  let usdRate = 3;
+  let planRows = [];
+  let saveTimer = null;
+  let hydrating = true;
+  const syncEl = document.getElementById('planSync');
+  const saveBtn = document.getElementById('planSaveBtn');
+  const gridEl = document.getElementById('planGrid');
+
+  function fmt(n) {
+    return (Math.round((Number(n) || 0) * 100) / 100).toLocaleString('ru-RU');
+  }
+
+  async function fetchUsdRate() {
+    try {
+      const resp = await fetch('https://api.nbrb.by/exrates/rates/USD?parammode=2');
+      if (!resp.ok) throw new Error('nbrb_http');
+      const data = await resp.json();
+      const rate = Number(data.Cur_OfficialRate) / (Number(data.Cur_Scale) || 1);
+      if (Number.isFinite(rate) && rate > 0) usdRate = rate;
+    } catch (e) {
+      console.warn('NBRB USD for plan failed, fallback 3:', e);
+      usdRate = 3;
+    }
+  }
+
+  function scheduleSave() {
+    if (hydrating) return;
+    clearTimeout(saveTimer);
+    syncEl.textContent = '⏳ Сохранение…';
+    syncEl.style.color = '#64748b';
+    saveTimer = setTimeout(persistPlan, 800);
+  }
+
+  async function persistPlan() {
+    if (!window.HelpersAPI) return;
+    saveBtn.disabled = true;
+    try {
+      await HelpersAPI.saveSheet('Plan', planRows.map(r => ({
+        month: r.month,
+        item: r.item,
+        amount: r.amount,
+        type: r.type
+      })));
+      syncEl.textContent = '☁️ План сохранён в Google Sheets';
+      syncEl.style.color = '#166534';
+    } catch (e) {
+      console.warn(e);
+      syncEl.textContent = '⚠️ Ошибка сохранения';
+      syncEl.style.color = '#991b1b';
+    } finally {
+      saveBtn.disabled = false;
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function monthKeys() {
+    const extra = [];
+    planRows.forEach(r => {
+      const m = r.month;
+      if (m && MONTH_ORDER.indexOf(m) === -1 && extra.indexOf(m) === -1) extra.push(m);
+    });
+    return MONTH_ORDER.concat(extra);
+  }
+
+  function byMonth() {
+    const keys = monthKeys();
+    const map = {};
+    keys.forEach(m => { map[m] = []; });
+    planRows.forEach((row, idx) => {
+      const m = row.month;
+      if (!map[m]) map[m] = [];
+      map[m].push({ ...row, _idx: idx });
+    });
+    return map;
+  }
+
+  function monthStats(items) {
+    const income = items.filter(i => i.type === 'income').reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const extras = items.filter(i => i.type === 'extra');
+    const expenses = items.filter(i => i.type === 'expense');
+    const extraSum = extras.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const expenseSum = expenses.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const invest = expenses.filter(i => String(i.item).includes('Инвестиции')).reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const vacation = expenses.filter(i => String(i.item).includes('Отпуск')).reduce((s, i) => s + (Number(i.amount) || 0), 0);
+    const base = expenseSum - invest; // expenses excluding? keep simple: total spent = expense+extra
+    const spent = expenseSum + extraSum;
+    const result = income - spent;
+    return { income, expenseSum, extraSum, invest, vacation, spent, result, expenses, extras };
+  }
+
+  function render() {
+    const map = byMonth();
+    let gridHtml = '';
+    let summaryHtml = '';
+    let totalIncome = 0, totalExtra = 0, totalInvest = 0, totalVacation = 0, totalSpent = 0, totalResult = 0;
+
+    monthKeys().forEach(month => {
+      const items = map[month] || [];
+      const st = monthStats(items);
+      totalIncome += st.income;
+      totalExtra += st.extraSum;
+      totalInvest += st.invest;
+      totalVacation += st.vacation;
+      totalSpent += st.spent;
+      totalResult += st.result;
+
+      let list = '';
+      items.filter(i => i.type === 'income').forEach(i => {
+        list += `<li class="income-row"><span>${escapeHtml(i.item)}</span>
+          <input class="amt" type="number" step="1" data-idx="${i._idx}" value="${Number(i.amount) || 0}"></li>`;
+      });
+      items.filter(i => i.type === 'expense').forEach(i => {
+        const hi = String(i.item).includes('Инвестиции') || String(i.item).includes('Отпуск');
+        list += `<li style="${hi ? 'font-weight:600;' : ''}"><span>${escapeHtml(i.item)}</span>
+          <input class="amt" type="number" step="1" data-idx="${i._idx}" value="${Number(i.amount) || 0}"></li>`;
+      });
+      items.filter(i => i.type === 'extra').forEach((i, n) => {
+        list += `<li class="extra" style="${n === 0 ? 'border-top:2px solid #f0dada;padding-top:10px;margin-top:4px;' : ''}">
+          <span>${escapeHtml(i.item)}</span>
+          <input class="amt" type="number" step="1" data-idx="${i._idx}" value="${Number(i.amount) || 0}"></li>`;
+      });
+      list += `<li class="total-row"><span>Всего трат</span> <span style="font-weight:700;">${fmt(st.spent)}</span></li>`;
+
+      const resClass = Math.abs(st.result) < 0.01 ? 'zero' : (st.result > 0 ? 'positive' : 'negative');
+      gridHtml += `
+        <div class="month-card">
+          <div class="month-header">
+            <span class="month-name">${escapeHtml(month)}</span>
+            <span class="month-badge">доход ${fmt(st.income)} BYN</span>
+          </div>
+          <ul class="item-list">${list}</ul>
+          <div class="month-result">
+            <span class="label">💰 Результат</span>
+            <span class="value ${resClass}">${fmt(st.result)} BYN</span>
+          </div>
+        </div>`;
+
+      summaryHtml += `
+        <div class="summary-item">
+          <span class="summary-label">${escapeHtml(month)}</span>
+          <span class="summary-number ${resClass}">${fmt(st.result)} BYN</span>
+        </div>`;
+    });
+
+    summaryHtml += `
+      <div class="summary-item" style="border-left:2px solid #bccce0; padding-left:18px;">
+        <span class="summary-label">Итоговый баланс</span>
+        <span class="summary-number ${Math.abs(totalResult) < 0.01 ? 'zero' : ''}">${fmt(totalResult)} BYN</span>
+      </div>`;
+
+    gridEl.innerHTML = gridHtml;
+    document.getElementById('planSummary').innerHTML = summaryHtml;
+    document.getElementById('planInvest').innerHTML = `
+      <div class="invest-item">
+        <span class="label">📈 Инвестиции (всего)</span>
+        <span class="value">${fmt(totalInvest)} BYN</span>
+        <span class="value usd">≈ ${fmt(totalInvest / usdRate)} $</span>
+      </div>
+      <div class="invest-item">
+        <span class="label">🏖️ Отпуск (всего)</span>
+        <span class="value">${fmt(totalVacation)} BYN</span>
+        <span class="value usd">≈ ${fmt(totalVacation / usdRate)} $</span>
+      </div>
+      <div class="invest-item" style="border-left:2px solid #b8d0b8; padding-left:18px;">
+        <span class="label">💰 Инвестиции + отпуск</span>
+        <span class="value">${fmt(totalInvest + totalVacation)} BYN</span>
+        <span class="value usd">≈ ${fmt((totalInvest + totalVacation) / usdRate)} $</span>
+      </div>`;
+    document.getElementById('planTotals').innerHTML = `
+      <span><strong>Всего доходов:</strong> ${fmt(totalIncome)} BYN</span>
+      <span><strong>Всего расходов:</strong> ${fmt(totalSpent)} BYN</span>
+      <span><strong>Разовые:</strong> ${fmt(totalExtra)} BYN</span>
+      <span><strong>Инвестиции:</strong> ${fmt(totalInvest)} BYN</span>`;
+    document.getElementById('planSub').innerHTML =
+      `<strong>Всего доходов за период:</strong> ${fmt(totalIncome)} BYN · суммы в <strong>BYN</strong>, курс <strong>1 $ = ${fmt(usdRate)} BYN</strong> (НБРБ). Разовые — <span style="color:#b33c3c;font-weight:500;">красным</span>.`;
+    const footer = document.querySelector('.footer');
+    if (footer) {
+      footer.innerHTML = `Данные из Google Sheets · курс <strong>1 $ = ${fmt(usdRate)} BYN</strong> (НБРБ)`;
+    }
+
+    gridEl.querySelectorAll('input.amt').forEach(inp => {
+      inp.addEventListener('change', function () {
+        const idx = Number(this.dataset.idx);
+        if (!Number.isFinite(idx) || !planRows[idx]) return;
+        planRows[idx].amount = parseFloat(this.value) || 0;
+        render();
+        scheduleSave();
+      });
+    });
+  }
+
+  async function load() {
+    await fetchUsdRate();
+    try {
+      planRows = await HelpersAPI.loadSheet('Plan');
+      planRows = planRows.map(r => ({
+        month: String(r.month || ''),
+        item: String(r.item || ''),
+        amount: parseFloat(r.amount) || 0,
+        type: String(r.type || 'expense')
+      }));
+      syncEl.textContent = '☁️ Данные из Google Sheets';
+      syncEl.style.color = '#166534';
+      saveBtn.disabled = false;
+      render();
+      hydrating = false;
+    } catch (e) {
+      console.warn(e);
+      syncEl.textContent = '⚠️ Не удалось загрузить Plan';
+      syncEl.style.color = '#991b1b';
+      hydrating = false;
+    }
+  }
+
+  saveBtn.addEventListener('click', function () {
+    clearTimeout(saveTimer);
+    persistPlan();
+  });
+
+  load();
+})();
+</script>
 
 </body>
 </html>

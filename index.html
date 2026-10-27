@@ -4,8 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Мой портфель — RUB / USD + BTC</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js">
-    </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6fa; min-height: 100vh; padding: 0; }
@@ -397,9 +395,9 @@
     <nav class="nav-bar">
         <div class="nav-logo">📊 <span>Portfolio</span></div>
         <div class="nav-links">
-            <a href="/plan.html" class="nav-btn plan">📋 Plan</a>
-            <a href="/budget.html" class="nav-btn budget">💰 Budget</a>
-            <a href="/" class="nav-btn moex">🏦 MOEX</a>
+            <a href="plan.html" class="nav-btn plan">📋 Plan</a>
+            <a href="budget.html" class="nav-btn budget">💰 Budget</a>
+            <a href="index.html" class="nav-btn moex">🏦 MOEX</a>
         </div>
     </nav>
 
@@ -507,6 +505,7 @@
         <div class="footer">Курс USD/RUB — ЦБ РФ · Котировки MOEX (задержка 15 мин) · Цена BTC — Binance</div>
     </div>
 
+    <script src="api.js"></script>
     <script>
         // ===== АВТОРИЗАЦИЯ =====
         (function() {
@@ -572,22 +571,82 @@
         })();
 
         // ===== ОСНОВНОЙ СКРИПТ =====
-        (function() {
-            const BTC_AMOUNT = 0.01053411;
-            const BTC_COST = 860.04;
+        (async function() {
+            const FALLBACK_BTC_AMOUNT = 0.01053411;
+            const FALLBACK_BTC_COST = 860.04;
+            const FALLBACK_DIVIDENDS = [
+                { ticker: 'SBER', name: 'Сбербанк', amountUSD: 6.56, date: '06.08.2026' },
+                { ticker: 'YDEX', name: 'Яндекс', amountUSD: 6.23, date: '25.09.2026' }
+            ];
+            const FALLBACK_TRADES = [
+                { ticker: 'SBER', shares: 5, price: 294.58, date: '14.07.2026 15:30' },
+                { ticker: 'SBER', shares: 13, price: 280.00, date: '17.07.2026 11:19' },
+                { ticker: 'YDEX', shares: 2, price: 3344.50, date: '17.07.2026 11:20' },
+                { ticker: 'MOEX', shares: 40, price: 136.73, date: '17.07.2026 10:21' },
+                { ticker: 'LKOH', shares: 1, price: 4165.00, date: '24.08.2026 16:02' },
+                { ticker: 'TATN', shares: 9, price: 515.50, date: '21.08.2026 11:19' },
+                { ticker: 'CHMF', shares: 8, price: 607.00, date: '21.08.2026 11:03' },
+                { ticker: 'SBER', shares: 43, price: 277.69, date: '09.09.2026 18:45' },
+                { ticker: 'TATN', shares: 23, price: 619.10, date: '09.09.2026 18:44' },
+                { ticker: 'PLZL', shares: 8, price: 982.20, date: '09.09.2026 17:57' },
+                { ticker: 'YDEX', shares: 3, price: 3880.00, date: '16.09.2026 03:00' },
+                { ticker: 'YDEX', shares: 1, price: 3880.00, date: '16.09.2026 03:00' },
+                { ticker: 'HEAD', shares: 1, price: 2790.00, date: '17.09.2026 12:12' },
+                { ticker: 'HEAD', shares: 5, price: 2790.00, date: '17.09.2026 12:11' },
+                { ticker: 'LKOH', shares: 2, price: 6059.00, date: '19.10.2026 13:17' },
+                { ticker: 'LKOH', shares: 2, price: 6059.00, date: '19.10.2026 13:17' },
+                { ticker: 'SBER', shares: 1, price: 293.01, date: '21.10.2026 15:16' },
+                { ticker: 'SBER', shares: 29, price: 293.01, date: '21.10.2026 15:16' },
+                { ticker: 'VKCO', shares: 60, price: 136.85, date: '21.10.2026 15:20' },
+                { ticker: 'MOEX', shares: 10, price: 155.38, date: '21.10.2026 15:23' },
+                { ticker: 'MOEX', shares: 30, price: 155.38, date: '21.10.2026 15:23' },
+                { ticker: 'YDEX', shares: 3, price: 3434.50, date: '21.10.2026 16:57' }
+            ];
+
+            let BTC_AMOUNT = FALLBACK_BTC_AMOUNT;
+            let BTC_COST = FALLBACK_BTC_COST;
+            let dividends = FALLBACK_DIVIDENDS.slice();
+            let trades = FALLBACK_TRADES.slice();
+
+            try {
+                if (window.HelpersAPI) {
+                    const [btcRows, divRows, tradeRows] = await Promise.all([
+                        HelpersAPI.loadSheet('BTC'),
+                        HelpersAPI.loadSheet('Dividends'),
+                        HelpersAPI.loadSheet('Portfolio')
+                    ]);
+                    if (btcRows[0]) {
+                        BTC_AMOUNT = parseFloat(btcRows[0].amount) || BTC_AMOUNT;
+                        BTC_COST = parseFloat(btcRows[0].cost_usd) || BTC_COST;
+                    }
+                    if (divRows.length) {
+                        dividends = divRows.map(d => ({
+                            ticker: String(d.ticker || ''),
+                            name: String(d.name || d.ticker || ''),
+                            amountUSD: parseFloat(d.amount_usd) || 0,
+                            date: String(d.date || '')
+                        }));
+                    }
+                    if (tradeRows.length) {
+                        trades = tradeRows.map(t => ({
+                            ticker: String(t.ticker || ''),
+                            shares: parseFloat(t.shares) || 0,
+                            price: parseFloat(t.price) || 0,
+                            date: String(t.date || '')
+                        }));
+                    }
+                }
+            } catch (e) {
+                console.warn('Sheets portfolio load failed, using fallback:', e);
+            }
+
+            const dividendsTotalUSD = dividends.reduce((sum, d) => sum + d.amountUSD, 0);
 
             let currentBtcPrice = 0;
             let stocksCurrentUSD = 0;
             let stocksCostUSD = 0;
             let stocksReady = false;
             let btcReady = false;
-
-            // Выплаченные дивиденды (USD)
-            const dividends = [
-                { ticker: 'SBER', name: 'Сбербанк', amountUSD: 6.56, date: '06.08.2026' },
-                { ticker: 'YDEX', name: 'Яндекс', amountUSD: 6.23, date: '25.09.2026' }
-            ];
-            const dividendsTotalUSD = dividends.reduce((sum, d) => sum + d.amountUSD, 0);
 
             const btcCardContainer = document.getElementById('btcCardContainer');
 
@@ -750,33 +809,7 @@
             }
             renderDividends();
 
-            // ===== АКЦИИ (ОБНОВЛЁННЫЕ СДЕЛКИ) =====
-            const trades = [
-                { ticker: 'SBER', shares: 5, price: 294.58, date: '14.07.2026 15:30' },
-                { ticker: 'SBER', shares: 13, price: 280.00, date: '17.07.2026 11:19' },
-                { ticker: 'YDEX', shares: 2, price: 3344.50, date: '17.07.2026 11:20' },
-                { ticker: 'MOEX', shares: 40, price: 136.73, date: '17.07.2026 10:21' },
-                { ticker: 'LKOH', shares: 1, price: 4165.00, date: '24.08.2026 16:02' },
-                { ticker: 'TATN', shares: 9, price: 515.50, date: '21.08.2026 11:19' },
-                { ticker: 'CHMF', shares: 8, price: 607.00, date: '21.08.2026 11:03' },
-                { ticker: 'SBER', shares: 43, price: 277.69, date: '09.09.2026 18:45' },
-                { ticker: 'TATN', shares: 23, price: 619.10, date: '09.09.2026 18:44' },
-                { ticker: 'PLZL', shares: 8, price: 982.20, date: '09.09.2026 17:57' },
-                { ticker: 'YDEX', shares: 3, price: 3880.00, date: '16.09.2026 03:00' },
-                { ticker: 'YDEX', shares: 1, price: 3880.00, date: '16.09.2026 03:00' },
-                { ticker: 'HEAD', shares: 1, price: 2790.00, date: '17.09.2026 12:12' },
-                { ticker: 'HEAD', shares: 5, price: 2790.00, date: '17.09.2026 12:11' },
-                // НОВЫЕ СДЕЛКИ (19–21.10.2026)
-                { ticker: 'LKOH', shares: 2, price: 6059.00, date: '19.10.2026 13:17' },
-                { ticker: 'LKOH', shares: 2, price: 6059.00, date: '19.10.2026 13:17' },
-                { ticker: 'SBER', shares: 1, price: 293.01, date: '21.10.2026 15:16' },
-                { ticker: 'SBER', shares: 29, price: 293.01, date: '21.10.2026 15:16' },
-                { ticker: 'VKCO', shares: 60, price: 136.85, date: '21.10.2026 15:20' },
-                { ticker: 'MOEX', shares: 10, price: 155.38, date: '21.10.2026 15:23' },
-                { ticker: 'MOEX', shares: 30, price: 155.38, date: '21.10.2026 15:23' },
-                { ticker: 'YDEX', shares: 3, price: 3434.50, date: '21.10.2026 16:57' }
-            ];
-
+            // ===== АКЦИИ =====
             const portfolio = {};
             trades.forEach(t => {
                 if (!portfolio[t.ticker]) {
@@ -1054,7 +1087,6 @@
 
             fetchPrices();
             setInterval(fetchPrices, 60000);
-            setInterval(fetchBtcPrice, 60000);
         })();
     </script>
 </body>

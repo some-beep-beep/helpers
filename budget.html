@@ -199,6 +199,26 @@
             outline: 2px solid #4f8cff;
             border-color: transparent;
         }
+        .rates input.rate-muted {
+            opacity: 0.45;
+            color: #64748b;
+        }
+        .rates input.rate-live {
+            opacity: 1;
+            border-color: #86efac;
+            background: #f0fdf4;
+        }
+        .rates input.rate-manual {
+            opacity: 1;
+            border-color: #93c5fd;
+            background: #eff6ff;
+        }
+        .rates-hint {
+            width: 100%;
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
         .total-budget {
             display: flex;
             align-items: center;
@@ -513,22 +533,24 @@
     <nav class="nav-bar">
         <div class="nav-logo">📊 <span>Portfolio</span></div>
         <div class="nav-links">
-            <a href="/plan.html" class="nav-btn plan">📋 Plan</a>
-            <a href="/budget.html" class="nav-btn budget">💰 Budget</a>
-            <a href="/" class="nav-btn moex">🏦 MOEX</a>
+            <a href="plan.html" class="nav-btn plan">📋 Plan</a>
+            <a href="budget.html" class="nav-btn budget">💰 Budget</a>
+            <a href="index.html" class="nav-btn moex">🏦 MOEX</a>
         </div>
     </nav>
 
     <div class="app-wrapper">
         <div class="container" id="app">
             <h1>💰 Бюджет</h1>
+            <p id="syncStatus" style="font-size:13px;color:#64748b;margin:-8px 0 14px;">⏳ Загрузка из Google Sheets…</p>
             <div class="sub">
                 <div class="rates">
-                    <label>💵 USD <input type="number" step="0.01" id="usdRate" value="2.9"></label>
-                    <label>💶 EUR <input type="number" step="0.01" id="eurRate" value="3.3"></label>
+                    <label>💵 USD <input type="number" step="0.0001" id="usdRate" value="2.9"></label>
+                    <label>💶 EUR <input type="number" step="0.0001" id="eurRate" value="3.3"></label>
+                    <div class="rates-hint" id="ratesHint">курсы: загрузка…</div>
                 </div>
-                <div class="total-budget">
-                    <label>Всего (BYN)</label>
+                <div class="total-budget" title="Общий бюджет месяца в белорусских рублях (total_byn в таблице)">
+                    <label>Бюджет месяца (BYN)</label>
                     <input type="number" step="1" id="totalBudget" value="5000">
                 </div>
             </div>
@@ -566,6 +588,7 @@
 
     <div class="save-notification" id="saveNotification">✅ Данные сохранены</div>
 
+    <script src="api.js"></script>
     <script>
         (function() {
             const STORAGE_KEY = 'budget_rows';
@@ -587,6 +610,18 @@
                 { id: 'r12', name: '💸 Потратил просто сразу', byn: 0 }
             ];
 
+            const syncStatusEl = document.getElementById('syncStatus');
+            const ratesHintEl = document.getElementById('ratesHint');
+            let cloudSaveTimer = null;
+            let cloudReady = false;
+            let hydrating = true; // не писать в Sheets во время первой загрузки
+
+            // live = НБРБ, fallback = из Sheets/кэша (полупрозрачные), manual = правлены вручную
+            let rateMode = 'fallback';
+            let fallbackUsd = 2.9;
+            let fallbackEur = 3.3;
+            let suppressRateInput = false;
+
             let rows = [];
             let counter = 100;
             let editingNameId = null;
@@ -606,20 +641,137 @@
                 return rows.filter(r => !isRemainderRow(r));
             }
 
-            function saveToStorage() {
+            function ratesForPersist() {
+                if (rateMode === 'manual') {
+                    return {
+                        usd: parseFloat(usdRateInput.value) || fallbackUsd,
+                        eur: parseFloat(eurRateInput.value) || fallbackEur
+                    };
+                }
+                return { usd: fallbackUsd, eur: fallbackEur };
+            }
+
+            function cacheLocally() {
                 try {
                     const editableRows = getEditableRows();
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(editableRows));
+                    const rates = ratesForPersist();
                     const settings = {
                         totalBudget: parseFloat(totalInput.value) || 5000,
-                        usdRate: parseFloat(usdRateInput.value) || 2.9,
-                        eurRate: parseFloat(eurRateInput.value) || 3.3
+                        usdRate: rates.usd,
+                        eurRate: rates.eur,
+                        rateMode: rateMode
                     };
                     localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
-                    showSaveNotification();
                 } catch (e) {
-                    console.warn('Ошибка сохранения в localStorage:', e);
+                    console.warn('Ошибка localStorage:', e);
                 }
+            }
+
+            function applyRateStyle() {
+                usdRateInput.classList.remove('rate-muted', 'rate-live', 'rate-manual');
+                eurRateInput.classList.remove('rate-muted', 'rate-live', 'rate-manual');
+                if (rateMode === 'live') {
+                    usdRateInput.classList.add('rate-live');
+                    eurRateInput.classList.add('rate-live');
+                    ratesHintEl.textContent = 'курсы НБРБ (актуальные) · можно поправить вручную';
+                } else if (rateMode === 'manual') {
+                    usdRateInput.classList.add('rate-manual');
+                    eurRateInput.classList.add('rate-manual');
+                    ratesHintEl.textContent = 'свои курсы (сохранены как запасные)';
+                } else {
+                    usdRateInput.classList.add('rate-muted');
+                    eurRateInput.classList.add('rate-muted');
+                    ratesHintEl.textContent = 'запасные курсы из таблицы (сеть недоступна)';
+                }
+            }
+
+            function setRateInputs(usd, eur) {
+                suppressRateInput = true;
+                usdRateInput.value = (Math.round(Number(usd) * 10000) / 10000).toString();
+                eurRateInput.value = (Math.round(Number(eur) * 10000) / 10000).toString();
+                suppressRateInput = false;
+                applyRateStyle();
+            }
+
+            async function fetchLiveRates() {
+                if (rateMode === 'manual') {
+                    applyRateStyle();
+                    return;
+                }
+                try {
+                    const [usdResp, eurResp] = await Promise.all([
+                        fetch('https://api.nbrb.by/exrates/rates/USD?parammode=2'),
+                        fetch('https://api.nbrb.by/exrates/rates/EUR?parammode=2')
+                    ]);
+                    if (!usdResp.ok || !eurResp.ok) throw new Error('nbrb_http');
+                    const usdData = await usdResp.json();
+                    const eurData = await eurResp.json();
+                    const usd = Number(usdData.Cur_OfficialRate) / (Number(usdData.Cur_Scale) || 1);
+                    const eur = Number(eurData.Cur_OfficialRate) / (Number(eurData.Cur_Scale) || 1);
+                    if (!Number.isFinite(usd) || !Number.isFinite(eur) || usd <= 0 || eur <= 0) {
+                        throw new Error('nbrb_bad');
+                    }
+                    rateMode = 'live';
+                    setRateInputs(usd, eur);
+                    updateDisplay(false);
+                } catch (e) {
+                    console.warn('NBRB rates failed:', e);
+                    rateMode = 'fallback';
+                    setRateInputs(fallbackUsd, fallbackEur);
+                    updateDisplay(false);
+                }
+            }
+
+            function saveToStorage() {
+                cacheLocally();
+                showSaveNotification();
+                scheduleCloudSave();
+            }
+
+            function scheduleCloudSave() {
+                if (hydrating || !cloudReady || !window.HelpersAPI) return;
+                clearTimeout(cloudSaveTimer);
+                syncStatusEl.textContent = '⏳ Сохранение в Google Sheets…';
+                syncStatusEl.style.color = '#64748b';
+                cloudSaveTimer = setTimeout(persistToCloud, 700);
+            }
+
+            async function persistToCloud() {
+                try {
+                    const budgetRows = getEditableRows().map(r => ({
+                        id: r.id,
+                        name: r.name,
+                        byn: parseFloat(r.byn) || 0
+                    }));
+                    const rates = ratesForPersist();
+                    const settingsRows = [{
+                        total_byn: parseFloat(totalInput.value) || 5000,
+                        usd_rate: rates.usd,
+                        eur_rate: rates.eur
+                    }];
+                    await HelpersAPI.saveSheet('Budget', budgetRows);
+                    await HelpersAPI.saveSheet('BudgetSettings', settingsRows);
+                    syncStatusEl.textContent = '☁️ Синхронизировано с Google Sheets';
+                    syncStatusEl.style.color = '#166534';
+                } catch (e) {
+                    console.warn('Cloud save failed:', e);
+                    syncStatusEl.textContent = '⚠️ Не удалось сохранить в Sheets (локально ок)';
+                    syncStatusEl.style.color = '#991b1b';
+                }
+            }
+
+            function applyRows(parsed) {
+                rows = parsed.filter(r => !isRemainderRow(r)).map(r => ({
+                    id: String(r.id || ('r' + (counter++))),
+                    name: String(r.name || ''),
+                    byn: parseFloat(r.byn) || 0
+                }));
+                const maxId = rows.reduce((max, r) => {
+                    const num = parseInt(String(r.id).replace(/\D/g, ''), 10);
+                    return !isNaN(num) && num > max ? num : max;
+                }, 100);
+                counter = maxId + 1;
             }
 
             function loadFromStorage() {
@@ -628,12 +780,7 @@
                     if (storedRows) {
                         const parsed = JSON.parse(storedRows);
                         if (Array.isArray(parsed) && parsed.length > 0) {
-                            rows = parsed.filter(r => !isRemainderRow(r));
-                            const maxId = rows.reduce((max, r) => {
-                                const num = parseInt(String(r.id).replace('r', ''), 10);
-                                return !isNaN(num) && num > max ? num : max;
-                            }, 100);
-                            counter = maxId + 1;
+                            applyRows(parsed);
                         } else {
                             rows = DEFAULT_ROWS.map(r => ({ ...r }));
                         }
@@ -645,12 +792,64 @@
                     if (storedSettings) {
                         const settings = JSON.parse(storedSettings);
                         totalInput.value = settings.totalBudget || 5000;
-                        usdRateInput.value = settings.usdRate || 2.9;
-                        eurRateInput.value = settings.eurRate || 3.3;
+                        fallbackUsd = parseFloat(settings.usdRate) || 2.9;
+                        fallbackEur = parseFloat(settings.eurRate) || 3.3;
+                        if (settings.rateMode === 'manual') {
+                            rateMode = 'manual';
+                            setRateInputs(fallbackUsd, fallbackEur);
+                        } else {
+                            rateMode = 'fallback';
+                            setRateInputs(fallbackUsd, fallbackEur);
+                        }
+                    } else {
+                        setRateInputs(fallbackUsd, fallbackEur);
                     }
                 } catch (e) {
                     console.warn('Ошибка загрузки из localStorage:', e);
                     rows = DEFAULT_ROWS.map(r => ({ ...r }));
+                    setRateInputs(fallbackUsd, fallbackEur);
+                }
+            }
+
+            async function loadFromCloud() {
+                if (!window.HelpersAPI) {
+                    syncStatusEl.textContent = '⚠️ api.js не загружен';
+                    syncStatusEl.style.color = '#991b1b';
+                    cloudReady = false;
+                    await fetchLiveRates();
+                    hydrating = false;
+                    return;
+                }
+                try {
+                    const [budgetRows, settingsRows] = await Promise.all([
+                        HelpersAPI.loadSheet('Budget'),
+                        HelpersAPI.loadSheet('BudgetSettings')
+                    ]);
+                    if (budgetRows.length) applyRows(budgetRows);
+                    if (settingsRows.length) {
+                        const s = settingsRows[0];
+                        totalInput.value = s.total_byn != null ? s.total_byn : 5000;
+                        fallbackUsd = s.usd_rate != null ? parseFloat(s.usd_rate) || 2.9 : 2.9;
+                        fallbackEur = s.eur_rate != null ? parseFloat(s.eur_rate) || 3.3 : 3.3;
+                        if (rateMode !== 'manual') {
+                            rateMode = 'fallback';
+                            setRateInputs(fallbackUsd, fallbackEur);
+                        }
+                    }
+                    cacheLocally();
+                    cloudReady = true;
+                    syncStatusEl.textContent = '☁️ Данные из Google Sheets';
+                    syncStatusEl.style.color = '#166534';
+                    render();
+                    await fetchLiveRates();
+                    hydrating = false;
+                } catch (e) {
+                    console.warn('Cloud load failed:', e);
+                    cloudReady = true;
+                    syncStatusEl.textContent = '⚠️ Sheets недоступны — локальный кэш';
+                    syncStatusEl.style.color = '#991b1b';
+                    await fetchLiveRates();
+                    hydrating = false;
                 }
             }
 
@@ -665,8 +864,8 @@
             }
 
             function getRates() {
-                const usd = parseFloat(usdRateInput.value) || 2.9;
-                const eur = parseFloat(eurRateInput.value) || 3.3;
+                const usd = parseFloat(usdRateInput.value) || fallbackUsd;
+                const eur = parseFloat(eurRateInput.value) || fallbackEur;
                 return { usd, eur };
             }
 
@@ -694,7 +893,7 @@
                 return rounded;
             }
 
-            function updateDisplay() {
+            function updateDisplay(shouldSave = true) {
                 const { usd, eur } = getRates();
                 const remainder = syncRemainderRow();
 
@@ -725,7 +924,7 @@
                     }
                 });
 
-                saveToStorage();
+                if (shouldSave) saveToStorage();
             }
 
             function escapeHtml(text) {
@@ -894,7 +1093,7 @@
                     });
                 });
 
-                saveToStorage();
+                if (!hydrating) saveToStorage();
             }
 
             function addRow(name, byn = 0) {
@@ -914,6 +1113,7 @@
             function init() {
                 loadFromStorage();
                 render();
+                loadFromCloud();
 
                 tbody.addEventListener('mousedown', function(e) {
                     const deleteBtn = e.target.closest('.delete-btn:not([disabled])');
@@ -935,11 +1135,20 @@
                     updateDisplay();
                 }
 
-                usdRateInput.addEventListener('change', handleSettingsChange);
-                eurRateInput.addEventListener('change', handleSettingsChange);
+                function handleRateUserEdit() {
+                    if (suppressRateInput) return;
+                    rateMode = 'manual';
+                    fallbackUsd = parseFloat(usdRateInput.value) || fallbackUsd;
+                    fallbackEur = parseFloat(eurRateInput.value) || fallbackEur;
+                    applyRateStyle();
+                    updateDisplay();
+                }
+
+                usdRateInput.addEventListener('change', handleRateUserEdit);
+                eurRateInput.addEventListener('change', handleRateUserEdit);
+                usdRateInput.addEventListener('input', handleRateUserEdit);
+                eurRateInput.addEventListener('input', handleRateUserEdit);
                 totalInput.addEventListener('change', handleSettingsChange);
-                usdRateInput.addEventListener('input', handleSettingsChange);
-                eurRateInput.addEventListener('input', handleSettingsChange);
                 totalInput.addEventListener('input', handleSettingsChange);
             }
 
