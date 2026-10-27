@@ -80,7 +80,16 @@
             transform: translateY(-1px);
         }
 
-        /* Кнопка Budget — синяя, как в примере */
+        .nav-btn.plan {
+            background: white;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        .nav-btn.plan:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
         .nav-btn.budget {
             background: #2563eb;
             color: white;
@@ -93,7 +102,6 @@
             border-color: #1d4ed8;
         }
 
-        /* Кнопка MOEX — outline, как в примере */
         .nav-btn.moex {
             background: white;
             border-color: #e2e8f0;
@@ -130,14 +138,9 @@
     <nav class="nav-bar">
         <div class="nav-logo">📊 <span>Portfolio</span></div>
         <div class="nav-links">
-            <!-- Budget → /budget.html -->
-            <a href="/budget.html" class="nav-btn budget">
-                💰 Budget
-            </a>
-            <!-- MOEX → /MOEX.html -->
-            <a href="/MOEX.html" class="nav-btn moex">
-                🏦 MOEX
-            </a>
+            <a href="/plan.html" class="nav-btn plan">📋 Plan</a>
+            <a href="/budget.html" class="nav-btn budget">💰 Budget</a>
+            <a href="/" class="nav-btn moex">🏦 MOEX</a>
         </div>
     </nav>
 
