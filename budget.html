@@ -109,6 +109,15 @@
             border-color: #1d4ed8;
         }
 
+        .nav-btn.invest {
+            background: white;
+            border-color: #e2e8f0;
+            color: #0f172a;
+        }
+        .nav-btn.invest:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
         .nav-btn.moex {
             background: white;
             border-color: #e2e8f0;
@@ -535,6 +544,7 @@
         <div class="nav-links">
             <a href="plan.html" class="nav-btn plan">📋 Plan</a>
             <a href="budget.html" class="nav-btn budget">💰 Budget</a>
+            <a href="invest.html" class="nav-btn invest">📈 Invest</a>
             <a href="index.html" class="nav-btn moex">🏦 MOEX</a>
         </div>
     </nav>
@@ -674,7 +684,10 @@
                 if (rateMode === 'live') {
                     usdRateInput.classList.add('rate-live');
                     eurRateInput.classList.add('rate-live');
-                    ratesHintEl.textContent = 'курсы НБРБ (актуальные) · можно поправить вручную';
+                    ratesHintEl.textContent =
+                        (window.__fxSource === 'er-api'
+                            ? 'курсы er-api (НБРБ недоступен)'
+                            : 'курсы НБРБ (актуальные)') + ' · можно поправить вручную';
                 } else if (rateMode === 'manual') {
                     usdRateInput.classList.add('rate-manual');
                     eurRateInput.classList.add('rate-manual');
@@ -699,28 +712,20 @@
                     applyRateStyle();
                     return;
                 }
-                try {
-                    const [usdResp, eurResp] = await Promise.all([
-                        fetch('https://api.nbrb.by/exrates/rates/USD?parammode=2'),
-                        fetch('https://api.nbrb.by/exrates/rates/EUR?parammode=2')
-                    ]);
-                    if (!usdResp.ok || !eurResp.ok) throw new Error('nbrb_http');
-                    const usdData = await usdResp.json();
-                    const eurData = await eurResp.json();
-                    const usd = Number(usdData.Cur_OfficialRate) / (Number(usdData.Cur_Scale) || 1);
-                    const eur = Number(eurData.Cur_OfficialRate) / (Number(eurData.Cur_Scale) || 1);
-                    if (!Number.isFinite(usd) || !Number.isFinite(eur) || usd <= 0 || eur <= 0) {
-                        throw new Error('nbrb_bad');
-                    }
-                    rateMode = 'live';
-                    setRateInputs(usd, eur);
-                    updateDisplay(false);
-                } catch (e) {
-                    console.warn('NBRB rates failed:', e);
+                const fx = await HelpersAPI.fetchFxRates({
+                    usdByn: fallbackUsd,
+                    eurByn: fallbackEur
+                });
+                if (fx.source === 'fallback') {
                     rateMode = 'fallback';
-                    setRateInputs(fallbackUsd, fallbackEur);
+                    setRateInputs(fx.usdByn, fx.eurByn);
                     updateDisplay(false);
+                    return;
                 }
+                rateMode = 'live';
+                window.__fxSource = fx.source;
+                setRateInputs(fx.usdByn, fx.eurByn);
+                updateDisplay(false);
             }
 
             function saveToStorage() {

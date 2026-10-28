@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Invest — облигации, токены, вклады, золото</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6fa; min-height: 100vh; padding: 0; }
+        .nav-bar {
+            position: sticky; top: 0; z-index: 100;
+            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+            gap: 16px 20px; background: white; padding: 16px 28px;
+            border-bottom: 1px solid #e9edf4; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        }
+        .nav-logo { font-weight: 700; font-size: 20px; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+        .nav-logo span { color: #2563eb; }
+        .nav-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .nav-btn {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 10px 22px; border-radius: 40px; font-weight: 600; font-size: 16px;
+            color: #1e293b; text-decoration: none; border: 1px solid #e2e8f0; background: #f8fafc;
+            transition: 0.15s ease;
+        }
+        .nav-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
+        .nav-btn.invest {
+            background: #2563eb; color: white; border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+        .nav-btn.invest:hover { background: #1d4ed8; border-color: #1d4ed8; }
+        @media (max-width: 700px) {
+            .nav-bar { flex-direction: column; align-items: stretch; padding: 16px 20px; }
+            .nav-links { justify-content: center; }
+            .nav-btn { flex: 1 0 auto; justify-content: center; }
+        }
+        .container { max-width: 960px; margin: 0 auto; padding: 24px; }
+        .page-title {
+            display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 16px; margin-bottom: 20px;
+        }
+        h1 { font-size: 26px; margin: 0; font-weight: 600; }
+        .subhead {
+            color: #475569; margin: 0; border-left: 4px solid #2563eb;
+            padding-left: 16px; font-size: 15px;
+        }
+        .sync { font-size: 13px; color: #64748b; margin-bottom: 18px; }
+        .section {
+            background: white; border-radius: 16px; border: 1px solid #e9edf4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); padding: 18px 20px 20px; margin-bottom: 20px;
+        }
+        .section-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; gap: 12px; flex-wrap: wrap;
+        }
+        .section-header .title { font-size: 18px; font-weight: 700; color: #0f172a; }
+        .section-header .sub { font-size: 13px; color: #94a3b8; }
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+        @media (max-width: 800px) { .card-grid { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 520px) { .card-grid { grid-template-columns: 1fr; } }
+        .card {
+            background: #f8fafc; padding: 16px 16px 14px; border-radius: 16px;
+            border: 1px solid #eef2f6; display: flex; flex-direction: column;
+        }
+        .card.withdrawn { opacity: 0.55; }
+        .card .ticker { font-weight: 700; font-size: 15px; color: #0f172a; line-height: 1.3; }
+        .card .name { font-size: 12px; color: #64748b; margin-top: 2px; word-break: break-word; }
+        .card .price { font-size: 22px; font-weight: 700; margin-top: 10px; color: #0f172a; }
+        .card .price small { font-size: 13px; font-weight: 400; color: #64748b; margin-left: 4px; }
+        .card .metric {
+            display: flex; flex-direction: row; align-items: center; flex-wrap: wrap;
+            gap: 6px; margin-top: 6px;
+        }
+        .card .metric-label { font-size: 11px; font-weight: 500; color: #94a3b8; }
+        .card .pill {
+            display: inline-block; padding: 2px 10px; border-radius: 30px;
+            font-size: 12px; font-weight: 500; background: #eef2f6; color: #1e293b;
+        }
+        .card .pill.rate { background: #dcfce7; color: #166534; }
+        .card .pill.warn { background: #fef3c7; color: #92400e; }
+        .card .pill.muted { background: #f1f5f9; color: #64748b; }
+        .card .change {
+            display: inline-block; padding: 2px 10px; border-radius: 30px;
+            font-size: 12px; font-weight: 500; background: #eef2f6; color: #1e293b;
+        }
+        .card .change.positive { background: #dcfce7; color: #166534; }
+        .card .change.negative { background: #fee2e2; color: #991b1b; }
+        .card .result { font-size: 13px; font-weight: 600; }
+        .card .result.positive { color: #166534; }
+        .card .result.negative { color: #991b1b; }
+        .card .local { font-size: 12px; color: #64748b; margin-top: 4px; }
+        .total-meta .earn { color: #166534; }
+        .total-meta .earn.neg { color: #991b1b; }
+        .result-block {
+            background: white; padding: 18px 24px; border-radius: 16px; border: 1px solid #e9edf4;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+            margin-bottom: 16px; gap: 12px;
+        }
+        .result-block .result-label { font-size: 15px; color: #475569; }
+        .result-block .result-value { font-size: 24px; font-weight: 700; color: #166534; text-align: right; }
+        .result-block .result-value.neg { color: #991b1b; }
+        .result-usd { font-size: 15px; color: #166534; margin-top: 2px; }
+        .summary-block {
+            background: white; padding: 18px 24px; border-radius: 16px; border: 1px solid #e9edf4;
+            margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px;
+        }
+        .summary-block .label { font-size: 14px; color: #64748b; }
+        .summary-block .value { font-size: 17px; font-weight: 600; color: #0f172a; text-align: right; }
+        .history {
+            background: white; border-radius: 16px; padding: 0; border: 1px solid #e9edf4; margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .history-toggle {
+            width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 16px 20px; border: none; background: transparent; cursor: pointer; text-align: left;
+            font: inherit; color: inherit;
+        }
+        .history-toggle:hover { background: #f8fafc; }
+        .history-toggle h3 {
+            font-size: 16px; font-weight: 600; margin: 0; color: #0f172a;
+            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+        }
+        .history-toggle .count {
+            font-size: 13px; font-weight: 500; color: #94a3b8;
+        }
+        .history-chevron {
+            font-size: 14px; color: #64748b; transition: transform 0.15s ease; flex-shrink: 0;
+        }
+        .history.open .history-chevron { transform: rotate(180deg); }
+        .history-body {
+            display: none; padding: 0 20px 16px; border-top: 1px solid #f1f5f9;
+        }
+        .history.open .history-body { display: block; }
+        .history-item {
+            font-size: 14px; color: #1e293b; padding: 7px 0; border-bottom: 1px solid #f1f5f9;
+            display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-item .date { color: #94a3b8; font-size: 12px; white-space: nowrap; }
+        .badge-inc { color: #166534; font-weight: 500; }
+        .total-investments {
+            background: white; padding: 20px 24px; border-radius: 16px; border: 1px solid #e9edf4;
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); margin-bottom: 24px;
+        }
+        .total-investments .label { font-size: 18px; font-weight: 600; color: #0f172a; }
+        .total-investments .value { font-size: 28px; font-weight: 700; color: #1d4ed8; }
+        .total-investments .sub { font-size: 14px; color: #64748b; }
+        .total-meta {
+            width: 100%; margin-top: 4px; padding-top: 12px; border-top: 1px solid #eef2f8;
+            font-size: 14px; color: #64748b; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 20px;
+        }
+        .total-meta strong { color: #0f172a; font-weight: 600; }
+        .apr-positive { color: #166534; }
+        .loading { text-align: center; padding: 30px; color: #64748b; background: white; border-radius: 20px; border: 1px solid #e9edf4; }
+        .error { color: #991b1b; background: #fee2e2; padding: 14px 18px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #fecaca; }
+        .footer { margin-top: 12px; font-size: 13px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
+        .auth-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            display: flex; align-items: center; justify-content: center; z-index: 9999;
+        }
+        .auth-overlay.hidden { display: none; }
+        .auth-card {
+            background: white; border-radius: 24px; padding: 36px 32px; width: min(360px, 92vw); text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        .auth-card h2 { font-size: 22px; margin-bottom: 6px; }
+        .auth-card p { color: #64748b; margin-bottom: 18px; }
+        .auth-card input {
+            width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 14px;
+            font-size: 20px; text-align: center; letter-spacing: 6px;
+        }
+        .auth-card .auth-btn {
+            margin-top: 16px; width: 100%; padding: 14px; border: none; border-radius: 40px;
+            background: #2563eb; color: white; font-weight: 600; font-size: 16px; cursor: pointer;
+        }
+        .auth-error { color: #dc2626; font-size: 14px; margin-top: 10px; min-height: 20px; }
+    </style>
+</head>
+<body>
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+            <h2>Введите код</h2>
+            <p>Доступ к Invest</p>
+            <input type="password" id="authInput" maxlength="6" placeholder="• • • • • •" />
+            <button class="auth-btn" id="authBtn">▶ Войти</button>
+            <div class="auth-error" id="authError"></div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-logo">📊 <span>Portfolio</span></div>
+        <div class="nav-links">
+            <a href="plan.html" class="nav-btn plan">📋 Plan</a>
+            <a href="budget.html" class="nav-btn budget">💰 Budget</a>
+            <a href="invest.html" class="nav-btn invest">📈 Invest</a>
+            <a href="index.html" class="nav-btn moex">🏦 MOEX</a>
+        </div>
+    </nav>
+
+    <div class="container" id="mainContent">
+        <div class="page-title">
+            <h1>📈 Invest</h1>
+            <div class="subhead">Облигации · токены · вклады · золото · НЗ</div>
+        </div>
+        <div class="sync" id="syncStatus">⏳ Загрузка из Google Sheets…</div>
+        <div id="errorMessage" class="error" style="display:none;"></div>
+        <div id="loadingMessage" class="loading">⏳ Загрузка…</div>
+
+        <div id="content" style="display:none;">
+            <div class="result-block">
+                <span class="result-label">💰 Результат Invest (доход)</span>
+                <div style="text-align:right;">
+                    <div class="result-value" id="incomeTotal">—</div>
+                    <div class="result-usd" id="incomePerMonth">—</div>
+                </div>
+            </div>
+
+            <div class="summary-block" id="summaryBlock"></div>
+
+            <div id="sections"></div>
+
+            <div class="history" id="incomeHistory">
+                <button type="button" class="history-toggle" id="incomeHistoryToggle" aria-expanded="false">
+                    <h3>💵 История выплат <span class="count" id="incomeHistoryCount"></span></h3>
+                    <span class="history-chevron" aria-hidden="true">▼</span>
+                </button>
+                <div class="history-body" id="incomeHistoryBody">
+                    <div id="incomeList"></div>
+                </div>
+            </div>
+
+            <div class="total-investments">
+                <div>
+                    <span class="label">💼 Всего Invest</span>
+                    <span class="sub">(без RU акций, BTC и НЗ)</span>
+                </div>
+                <div>
+                    <span class="value" id="totalValue">—</span>
+                </div>
+                <div class="total-meta">
+                    <span>💰 Заработал (выплаты): <strong id="investEarned" class="earn">—</strong></span>
+                    <span>🥇 Золото P&amp;L: <strong id="goldPnl" class="earn">—</strong></span>
+                    <span>⏱ С начала: <strong id="investDays">—</strong></span>
+                    <span>📈 Годовых (по выплатам): <strong id="investApr" class="apr-positive">—</strong></span>
+                </div>
+            </div>
+
+            <div class="total-investments" id="totalWithCashBlock">
+                <div>
+                    <span class="label">🏦 Все сбережения</span>
+                    <span class="sub">Invest + НЗ</span>
+                </div>
+                <div>
+                    <span class="value" id="totalWithCash">—</span>
+                </div>
+                <div class="total-meta">
+                    <span>💼 Invest: <strong id="investOnlyMeta">—</strong></span>
+                    <span>💵 НЗ: <strong id="cashReserve">—</strong></span>
+                </div>
+            </div>
+
+            <div class="footer">Данные из Google Sheets · курсы · золото PAXG/Binance · страница Invest</div>
+        </div>
+    </div>
+
+    <script src="api.js"></script>
+    <script>
+    (function () {
+        const PASSWORD = '906090';
+        const COOKIE_NAME = 'portfolio_auth';
+
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : null;
+        }
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = name + '=' + value + ';expires=' + date.toUTCString() + ';path=/';
+        }
+
+        (function auth() {
+            const overlay = document.getElementById('authOverlay');
+            const authInput = document.getElementById('authInput');
+            const authBtn = document.getElementById('authBtn');
+            const authError = document.getElementById('authError');
+            function hide() { overlay.classList.add('hidden'); }
+            function tryLogin() {
+                if (authInput.value.trim() === PASSWORD) {
+                    setCookie(COOKIE_NAME, '1', 30);
+                    hide();
+                } else {
+                    authError.textContent = '❌ Неверный код';
+                    authInput.value = '';
+                    authInput.focus();
+                }
+            }
+            if (getCookie(COOKIE_NAME) === '1') hide();
+            authBtn.addEventListener('click', tryLogin);
+            authInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); tryLogin(); }
+            });
+        })();
+
+        const CAT_ORDER = ['bond', 'token', 'deposit', 'gold', 'cash'];
+        const CAT_TITLE = {
+            bond: '📜 Облигации USD',
+            token: '🪙 Токены',
+            deposit: '🏦 Вклады BYN',
+            gold: '🥇 Золото',
+            cash: '💵 НЗ (наличка)'
+        };
+
+        // Seed (если листы пусты / скрипт ещё не обновлён) — без RU акций и BTC
+        const SEED_ASSETS = [
+            {id:'a0',name:'НЗ (запас наличкой)',category:'cash',ticker:'CASH',amount_usd:5000,amount_local:0,currency:'USD',count:0,rate_pct:0,maturity:'',status:'active',note:'не инвестировано · подушка'},
+            {id:'a1',name:'ВГДО 331 (Айгенис) #1',category:'bond',ticker:'VGDO-331',amount_usd:1000,amount_local:2980,currency:'BYN',count:0,rate_pct:4,maturity:'29.06.2027',status:'active',note:'2980 BYN'},
+            {id:'a1b',name:'ВГДО 331 (Айгенис) #2',category:'bond',ticker:'VGDO-331',amount_usd:1000,amount_local:2980,currency:'BYN',count:0,rate_pct:4,maturity:'29.06.2027',status:'active',note:'2980 BYN'},
+            {id:'a2',name:'ГУРМИНА (файнес)',category:'token',ticker:'GURMINA.USD.2025.02',amount_usd:2000,amount_local:0,currency:'USD',count:0,rate_pct:10,maturity:'14.06.2028',status:'active',note:''},
+            {id:'a3',name:'ГУРМИНА (finstore)',category:'token',ticker:'GURMINA_(USD_721)',amount_usd:999.5,amount_local:0,currency:'USD',count:0,rate_pct:9.25,maturity:'15.05.2028',status:'active',note:''},
+            {id:'a4',name:'Бутикавто (finstore)',category:'token',ticker:'BUTIKAVTO_(USD_830)',amount_usd:2480,amount_local:0,currency:'USD',count:0,rate_pct:10,maturity:'15.12.2029',status:'active',note:''},
+            {id:'a5',name:'Евротайм (finstore)',category:'token',ticker:'EUROTM_(USD_774)',amount_usd:1000,amount_local:0,currency:'USD',count:0,rate_pct:7.5,maturity:'15.07.2030',status:'active',note:''},
+            {id:'a6',name:'Ювилс (finstore)',category:'token',ticker:'YOWHEELS_(BYN_840)',amount_usd:508,amount_local:0,currency:'BYN',count:1500,rate_pct:19.5,maturity:'10.05.2030',status:'active',note:''},
+            {id:'a7',name:'HELLO (байнекс)',category:'token',ticker:'HEL2USD27 (HEL2)',amount_usd:0,amount_local:0,currency:'USD',count:0,rate_pct:9.5,maturity:'',status:'withdrawn',note:'вывел 06.09.2026 · комиссия 7$'},
+            {id:'a8',name:'Евротайм ERT1 (байнекс)',category:'token',ticker:'ERT1USD27 (ERT1)',amount_usd:1000,amount_local:0,currency:'USD',count:0,rate_pct:6.5,maturity:'20.08.2027',status:'active',note:''},
+            {id:'a9',name:'Евротайм ERT3 (байнекс)',category:'token',ticker:'ERT3USD30 (ERT3)',amount_usd:1200,amount_local:0,currency:'USD',count:0,rate_pct:7.5,maturity:'31.08.2028',status:'active',note:''},
+            {id:'a10',name:'Вклад BNB «Такса» капит. 12.6%',category:'deposit',ticker:'',amount_usd:1749,amount_local:5159.54,currency:'BYN',count:0,rate_pct:12.6,maturity:'10.07.2027',status:'active',note:''},
+            {id:'a11',name:'Вклад BNB «Такса» доход 14.5%',category:'deposit',ticker:'',amount_usd:1431,amount_local:4220.46,currency:'BYN',count:0,rate_pct:14.5,maturity:'18.07.2029',status:'active',note:''},
+            {id:'a12',name:'Вклад BNB «Такса» доход 12.9%',category:'deposit',ticker:'',amount_usd:73,amount_local:215,currency:'BYN',count:0,rate_pct:12.9,maturity:'16.09.2027',status:'active',note:''},
+            {id:'a13',name:'Золото слитки (5+5)',category:'gold',ticker:'GLD',amount_usd:1306.7,amount_local:0,currency:'GLD',count:10,rate_pct:0,maturity:'',status:'active',note:''}
+        ];
+        const SEED_META = [{ key: 'start_date', value: '14.10.2025' }];
+        const SEED_INCOME = (function () {
+            const rows = [];
+            function add(asset, date, amount, currency, amount_byn, note) {
+                if (!amount && !note) return;
+                rows.push({
+                    asset: asset, date: date, amount: amount || 0,
+                    currency: currency || 'USD', amount_byn: amount_byn || '', note: note || ''
+                });
+            }
+            // две облигации ВГДО — по 2 выплаты на каждую
+            add('ВГДО 331 (Айгенис) #1','29.12.2025',38.44);
+            add('ВГДО 331 (Айгенис) #1','29.06.2026',38.44,'USD',107.08);
+            add('ВГДО 331 (Айгенис) #2','29.12.2025',38.44);
+            add('ВГДО 331 (Айгенис) #2','29.06.2026',38.44,'USD',107.08);
+            [['15.01.2026',3.12],['15.02.2026',16.14],['15.03.2026',14.58],['15.04.2026',16.14],['15.05.2026',15.62],['15.06.2026',16.14],['15.07.2026',15.62],['15.08.2026',16.14],['15.09.2026',16.14],['15.10.2026',15.62]]
+                .forEach(function (x) { add('ГУРМИНА (файнес)', x[0], x[1]); });
+            [['10.12.2025',0.53],['10.01.2026',5.08],['10.02.2026',8.15],['10.03.2026',7.36],['10.04.2026',8.15],['10.05.2026',7.89],['10.06.2026',8.15],['10.07.2026',7.89],['10.08.2026',8.15],['10.09.2026',8.15],['10.10.2026',1.05]]
+                .forEach(function (x) { add('HELLO (байнекс)', x[0], x[1]); });
+            add('HELLO (байнекс)','06.09.2026',0,'USD',0,'вывел 993$ · комиссия 7$');
+            [['10.01.2026',3.12],['10.02.2026',5.52],['10.03.2026',4.99],['10.04.2026',5.52],['10.05.2026',5.34],['10.06.2026',5.52],['10.07.2026',5.34],['10.08.2026',5.52],['10.09.2026',5.52],['10.10.2026',5.34]]
+                .forEach(function (x) { add('Евротайм ERT1 (байнекс)', x[0], x[1]); });
+            [['10.02.2026',3.95],['10.03.2026',6.9],['10.04.2026',7.64],['10.05.2026',7.4],['10.06.2026',7.64],['10.07.2026',7.4],['10.08.2026',7.64],['10.09.2026',7.64],['10.10.2026',7.4]]
+                .forEach(function (x) { add('Евротайм ERT3 (байнекс)', x[0], x[1]); });
+            [['15.02.2026',3.7],['15.03.2026',5.75],['15.04.2026',6.16],['15.05.2026',6.16],['15.06.2026',6.37],['15.07.2026',6.16],['15.08.2026',6.37],['15.09.2026',6.37],['15.10.2026',6.16]]
+                .forEach(function (x) { add('Евротайм (finstore)', x[0], x[1]); });
+            [['15.02.2026',10.41],['15.03.2026',15.34],['15.04.2026',16.99],['15.05.2026',16.44],['15.06.2026',19.35],['15.07.2026',20.38],['15.08.2026',21.06],['15.09.2026',21.06],['15.10.2026',20.38]]
+                .forEach(function (x) { add('Бутикавто (finstore)', x[0], x[1]); });
+            [['05.03.2026',5.53,16.03],['05.04.2026',8.57,24.84],['05.05.2026',8.56,24.04],['05.06.2026',8.84,24.84],['05.07.2026',8.56,24.04],['05.08.2026',8.56,24.04],['05.09.2026',7.88,24.04],['05.10.2026',7.88,24.04]]
+                .forEach(function (x) { add('Ювилс (finstore)', x[0], x[1], 'USD', x[2]); });
+            [['15.06.2026',4.56],['15.07.2026',7.6],['15.08.2026',7.86],['15.09.2026',7.86],['15.10.2026',7.6]]
+                .forEach(function (x) { add('ГУРМИНА (finstore)', x[0], x[1]); });
+            [['18.07.2026',6.4,18.31],['18.08.2026',6.24,18.73],['18.09.2026',6.18,18.54],['18.10.2026',8.51,25.52]]
+                .forEach(function (x) { add('Вклад BNB «Такса» доход 14.5%', x[0], x[1], 'USD', x[2]); });
+            [['10.07.2026',11.46,32.77],['10.08.2026',13.12,37.53],['10.09.2026',12.3,37.53],['10.10.2026',11.73,35.79]]
+                .forEach(function (x) { add('Вклад BNB «Такса» капит. 12.6%', x[0], x[1], 'USD', x[2]); });
+            [['16.09.2026',0.36,1.1],['16.10.2026',0.35,1.06]]
+                .forEach(function (x) { add('Вклад BNB «Такса» доход 12.9%', x[0], x[1], 'USD', x[2]); });
+            return rows;
+        })();
+
+        function parseRuDate(str) {
+            if (!str) return null;
+            const [d, m, y] = String(str).split(/[.\s]/).map(Number);
+            if (!y || !m || !d) return null;
+            return new Date(y, m - 1, d);
+        }
+        function daysWord(n) {
+            const abs = Math.abs(n) % 100;
+            const n1 = abs % 10;
+            if (abs > 10 && abs < 20) return 'дней';
+            if (n1 === 1) return 'день';
+            if (n1 >= 2 && n1 <= 4) return 'дня';
+            return 'дней';
+        }
+        function fmt(n, digits) {
+            const d = digits == null ? 2 : digits;
+            return (Math.round((Number(n) || 0) * Math.pow(10, d)) / Math.pow(10, d))
+                .toLocaleString('ru-RU', { minimumFractionDigits: d, maximumFractionDigits: d });
+        }
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function daysLeft(maturity) {
+            const dt = parseRuDate(maturity);
+            if (!dt) return null;
+            return Math.ceil((dt.getTime() - Date.now()) / 86400000);
+        }
+
+        async function fetchUsdByn() {
+            const fx = await HelpersAPI.fetchFxRates({ usdByn: 2.95, eurByn: 3.25 });
+            window.__fxSource = fx.source;
+            return fx.usdByn;
+        }
+
+        // 1 г золота ≈ PAXG / 31.1034768 (тройская унция)
+        const TROY_OZ_G = 31.1034768;
+        async function fetchGoldQuote() {
+            try {
+                const ctrl = new AbortController();
+                const t = setTimeout(function () { ctrl.abort(); }, 6000);
+                const resp = await fetch(
+                    'https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT',
+                    { signal: ctrl.signal }
+                );
+                clearTimeout(t);
+                if (!resp.ok) throw new Error('paxg_http');
+                const data = await resp.json();
+                const oz = parseFloat(data.lastPrice);
+                const dayPct = parseFloat(data.priceChangePercent);
+                if (!Number.isFinite(oz) || oz <= 0) throw new Error('paxg_bad');
+                return {
+                    perGram: oz / TROY_OZ_G,
+                    dayPct: Number.isFinite(dayPct) ? dayPct : 0
+                };
+            } catch (e) {
+                console.warn('Gold quote failed', e);
+                return null;
+            }
+        }
+
+        function assetMarkUsd(a, goldQuote) {
+            if (String(a.category) === 'gold' && goldQuote && Number(a.count) > 0) {
+                return goldQuote.perGram * Number(a.count);
+            }
+            return Number(a.amount_usd) || 0;
+        }
+
+        function normName(s) {
+            return String(s || '')
+                .toLowerCase()
+                .replace(/[«»"']/g, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function rowIncomeUsd(row, usdByn) {
+            const cur = String(row.currency || 'USD').toUpperCase();
+            const amt = Number(row.amount) || 0;
+            if (cur === 'BYN') return usdByn > 0 ? amt / usdByn : 0;
+            return amt;
+        }
+
+        function buildIncomeByAsset(income, usdByn) {
+            const map = {};
+            (income || []).forEach(function (row) {
+                const key = normName(row.asset);
+                if (!key) return;
+                map[key] = (map[key] || 0) + rowIncomeUsd(row, usdByn);
+            });
+            return map;
+        }
+
+        function earnedForAsset(a, incomeMap) {
+            const name = normName(a.name);
+            if (name && incomeMap[name] != null) return incomeMap[name];
+            const ticker = normName(a.ticker);
+            let best = null;
+            Object.keys(incomeMap).forEach(function (k) {
+                const hit =
+                    (name && (k.indexOf(name) !== -1 || name.indexOf(k) !== -1)) ||
+                    (ticker && ticker.length > 3 && k.indexOf(ticker) !== -1);
+                if (!hit) return;
+                if (best == null) best = 0;
+                best += incomeMap[k];
+            });
+            return best == null ? 0 : best;
+        }
+
+        /** Две облигации ВГДО + 4 выплаты (раньше учли как одну). */
+        function ensureVgdoPair(assets, income) {
+            let list = (assets || []).map(function (a) { return Object.assign({}, a); });
+            let pays = (income || []).map(function (r) { return Object.assign({}, r); });
+            let changed = false;
+
+            const vgdoAssets = list.filter(function (a) {
+                return /вгдо/i.test(String(a.name || ''));
+            });
+            if (vgdoAssets.length === 1) {
+                const one = vgdoAssets[0];
+                const half = (Number(one.amount_usd) || 2000) / 2;
+                one.name = 'ВГДО 331 (Айгенис) #1';
+                one.ticker = one.ticker || 'VGDO-331';
+                one.amount_usd = half;
+                if (!Number(one.amount_local)) one.amount_local = 2980;
+                if (!one.currency || String(one.currency).toUpperCase() === 'USD') one.currency = 'BYN';
+                one.note = one.note || '2980 BYN';
+                list.push({
+                    id: 'a1b',
+                    name: 'ВГДО 331 (Айгенис) #2',
+                    category: 'bond',
+                    ticker: 'VGDO-331',
+                    amount_usd: half,
+                    amount_local: Number(one.amount_local) || 2980,
+                    currency: 'BYN',
+                    count: 0,
+                    rate_pct: Number(one.rate_pct) || 4,
+                    maturity: one.maturity || '29.06.2027',
+                    status: 'active',
+                    note: '2980 BYN'
+                });
+                changed = true;
+            }
+
+            const vgdoPays = pays.filter(function (r) {
+                return /вгдо/i.test(String(r.asset || ''));
+            });
+            if (vgdoPays.length > 0 && vgdoPays.length < 4) {
+                // убрать старые строки ВГДО и записать 4 корректные
+                pays = pays.filter(function (r) {
+                    return !/вгдо/i.test(String(r.asset || ''));
+                });
+                [
+                    { asset: 'ВГДО 331 (Айгенис) #1', date: '29.12.2025', amount: 38.44, currency: 'USD', amount_byn: '', note: '' },
+                    { asset: 'ВГДО 331 (Айгенис) #1', date: '29.06.2026', amount: 38.44, currency: 'USD', amount_byn: 107.08, note: '' },
+                    { asset: 'ВГДО 331 (Айгенис) #2', date: '29.12.2025', amount: 38.44, currency: 'USD', amount_byn: '', note: '' },
+                    { asset: 'ВГДО 331 (Айгенис) #2', date: '29.06.2026', amount: 38.44, currency: 'USD', amount_byn: 107.08, note: '' }
+                ].forEach(function (row) { pays.push(row); });
+                changed = true;
+            } else if (vgdoPays.length === 0) {
+                [
+                    { asset: 'ВГДО 331 (Айгенис) #1', date: '29.12.2025', amount: 38.44, currency: 'USD', amount_byn: '', note: '' },
+                    { asset: 'ВГДО 331 (Айгенис) #1', date: '29.06.2026', amount: 38.44, currency: 'USD', amount_byn: 107.08, note: '' },
+                    { asset: 'ВГДО 331 (Айгенис) #2', date: '29.12.2025', amount: 38.44, currency: 'USD', amount_byn: '', note: '' },
+                    { asset: 'ВГДО 331 (Айгенис) #2', date: '29.06.2026', amount: 38.44, currency: 'USD', amount_byn: 107.08, note: '' }
+                ].forEach(function (row) { pays.push(row); });
+                changed = true;
+            } else {
+                // переименовать старые «ВГДО …» без #1/#2
+                let idx = 0;
+                pays.forEach(function (r) {
+                    if (!/вгдо/i.test(String(r.asset || ''))) return;
+                    if (/#\s*[12]/.test(String(r.asset))) return;
+                    idx += 1;
+                    r.asset = 'ВГДО 331 (Айгенис) #' + (idx <= 2 ? '1' : '2');
+                    changed = true;
+                });
+            }
+
+            return { assets: list, income: pays, changed: changed };
+        }
+
+        /** Если в Sheets ещё нет НЗ — вынести из note / добавить $5000. */
+        function ensureCashReserve(assets) {
+            const list = (assets || []).map(function (a) {
+                return Object.assign({}, a);
+            });
+            let changed = false;
+            let nzFromNote = 0;
+            list.forEach(function (a) {
+                const note = String(a.note || '');
+                const m = note.match(/нз\s*[—\-]?\s*([\d\s]+)/i);
+                if (!m) return;
+                const raw = m[1].replace(/\s/g, '');
+                nzFromNote = Number(raw) || 5000;
+                a.note = note.replace(/\s*нз\s*[—\-]?\s*[\d\s]+\s*/i, ' ').trim();
+                changed = true;
+            });
+            const hasCash = list.some(function (a) {
+                return String(a.category) === 'cash' || /^нз\b/i.test(String(a.name || ''));
+            });
+            if (!hasCash) {
+                list.unshift({
+                    id: 'a0',
+                    name: 'НЗ (запас наличкой)',
+                    category: 'cash',
+                    ticker: 'CASH',
+                    amount_usd: nzFromNote || 5000,
+                    amount_local: 0,
+                    currency: 'USD',
+                    count: 0,
+                    rate_pct: 0,
+                    maturity: '',
+                    status: 'active',
+                    note: 'не инвестировано · подушка'
+                });
+                changed = true;
+            } else {
+                list.forEach(function (a) {
+                    if (String(a.category) !== 'cash' && !/^нз\b/i.test(String(a.name || ''))) return;
+                    if (String(a.category) !== 'cash') {
+                        a.category = 'cash';
+                        changed = true;
+                    }
+                });
+            }
+            return { assets: list, changed: changed };
+        }
+
+        function earnedMetricHtml(earned, cost) {
+            const pct = cost > 0 ? (earned / cost) * 100 : 0;
+            if (earned > 0) {
+                return (
+                    '<div class="metric"><span class="metric-label">Заработал:</span>' +
+                    '<span class="result positive">+$' + fmt(earned) +
+                    (cost > 0 ? ' (+' + fmt(pct) + '%)' : '') +
+                    '</span></div>'
+                );
+            }
+            if (earned < 0) {
+                return (
+                    '<div class="metric"><span class="metric-label">Потерял:</span>' +
+                    '<span class="result negative">-$' + fmt(Math.abs(earned)) +
+                    (cost > 0 ? ' (' + fmt(pct) + '%)' : '') +
+                    '</span></div>'
+                );
+            }
+            return (
+                '<div class="metric"><span class="metric-label">Заработал:</span>' +
+                '<span class="pill muted">$0</span></div>'
+            );
+        }
+
+        function render(assets, income, meta, usdByn, goldQuote) {
+            const startStr = (meta.find(function (m) { return m.key === 'start_date'; }) || {}).value || '14.10.2025';
+            const start = parseRuDate(startStr) || new Date(2025, 9, 14);
+            const daysPassed = Math.max(1, Math.floor((Date.now() - start.getTime()) / 86400000));
+
+            const active = assets.filter(function (a) { return String(a.status || 'active') !== 'withdrawn'; });
+            const totalUsd = active.reduce(function (s, a) { return s + assetMarkUsd(a, goldQuote); }, 0);
+            const cashUsd = active
+                .filter(function (a) { return String(a.category) === 'cash'; })
+                .reduce(function (s, a) { return s + (Number(a.amount_usd) || 0); }, 0);
+            const investedUsd = totalUsd - cashUsd;
+
+            const now = Date.now();
+            const last30Start = now - 30 * 86400000;
+            let incomeUsd = 0;
+            let incomeLast30 = 0;
+            income.forEach(function (row) {
+                const cur = String(row.currency || 'USD').toUpperCase();
+                const amt = Number(row.amount) || 0;
+                let usd = amt;
+                if (cur === 'BYN') usd = usdByn > 0 ? amt / usdByn : 0;
+                incomeUsd += usd;
+                const dt = parseRuDate(row.date);
+                if (dt && dt.getTime() >= last30Start && dt.getTime() <= now + 86400000) {
+                    incomeLast30 += usd;
+                }
+            });
+            const incomeMonth = incomeUsd / daysPassed * 30.44;
+            // годовых считаем от вложений без НЗ-налички
+            const apr = investedUsd > 0 ? (incomeUsd / investedUsd) * (365 / daysPassed) * 100 : 0;
+
+            let goldCost = 0;
+            let goldCurrent = 0;
+            active.forEach(function (a) {
+                if (String(a.category) !== 'gold') return;
+                goldCost += Number(a.amount_usd) || 0;
+                goldCurrent += assetMarkUsd(a, goldQuote);
+            });
+            const goldPnl = goldCurrent - goldCost;
+            const goldPnlPct = goldCost > 0 ? (goldPnl / goldCost) * 100 : 0;
+
+            document.getElementById('incomeTotal').textContent = '+$' + fmt(incomeUsd);
+            document.getElementById('incomePerMonth').textContent =
+                'За 30 дн: +$' + fmt(incomeLast30) +
+                ' · ср. ≈ $' + fmt(incomeMonth) + ' / мес · $' + fmt(incomeUsd / daysPassed) + ' / день';
+            document.getElementById('totalValue').textContent = '$' + fmt(investedUsd);
+            document.getElementById('totalWithCash').textContent = '$' + fmt(totalUsd);
+            document.getElementById('investOnlyMeta').textContent = '$' + fmt(investedUsd);
+            document.getElementById('cashReserve').textContent = '$' + fmt(cashUsd);
+            document.getElementById('investDays').textContent = daysPassed + ' ' + daysWord(daysPassed);
+            document.getElementById('investApr').textContent = (apr >= 0 ? '+' : '') + fmt(apr) + '%';
+
+            const earnedEl = document.getElementById('investEarned');
+            earnedEl.textContent = '+$' + fmt(incomeUsd) + ' · ≈ $' + fmt(incomeMonth) + '/мес';
+            earnedEl.className = 'earn';
+
+            const goldPnlEl = document.getElementById('goldPnl');
+            if (goldQuote && goldCost > 0) {
+                const gSign = goldPnl >= 0 ? '+' : '';
+                goldPnlEl.textContent = gSign + '$' + fmt(goldPnl) + ' (' + gSign + fmt(goldPnlPct) + '%)';
+                goldPnlEl.className = 'earn' + (goldPnl >= 0 ? '' : ' neg');
+            } else {
+                goldPnlEl.textContent = '—';
+                goldPnlEl.className = 'earn';
+            }
+
+            const incomeByAsset = buildIncomeByAsset(income, usdByn);
+
+            const byCat = {};
+            CAT_ORDER.forEach(function (c) { byCat[c] = []; });
+            assets.forEach(function (a) {
+                const cat = String(a.category || 'token');
+                if (!byCat[cat]) byCat[cat] = [];
+                byCat[cat].push(a);
+            });
+
+            let sectionsHtml = '';
+            CAT_ORDER.forEach(function (cat) {
+                const rows = byCat[cat] || [];
+                if (!rows.length) return;
+                const sum = rows
+                    .filter(function (a) { return String(a.status) !== 'withdrawn'; })
+                    .reduce(function (s, a) { return s + assetMarkUsd(a, goldQuote); }, 0);
+                const earnedCat = rows.reduce(function (s, a) {
+                    return s + earnedForAsset(a, incomeByAsset);
+                }, 0);
+                const baseForPct = cat === 'cash' ? totalUsd : investedUsd;
+                const pct = baseForPct > 0 ? (sum / baseForPct) * 100 : 0;
+                let cards = '';
+                rows.forEach(function (a) {
+                    const withdrawn = String(a.status) === 'withdrawn';
+                    const left = daysLeft(a.maturity);
+                    const rate = Number(a.rate_pct) || 0;
+                    const local = Number(a.amount_local) || 0;
+                    const cur = String(a.currency || 'USD').toUpperCase();
+                    const cost = Number(a.amount_usd) || 0;
+                    const mark = assetMarkUsd(a, goldQuote);
+                    const earned = earnedForAsset(a, incomeByAsset);
+                    // для % от вложений у выведенных берём max(cost, earned) чтобы не делить на 0
+                    const costForPct = cost > 0 ? cost : 0;
+
+                    if (cat === 'cash') {
+                        cards +=
+                            '<div class="card">' +
+                            '<div class="ticker">' + escapeHtml(a.name || 'НЗ') + '</div>' +
+                            '<div class="name">наличка · резерв</div>' +
+                            '<div class="price">$' + fmt(cost) + '</div>' +
+                            '<div class="metric"><span class="metric-label">Тип:</span>' +
+                            '<span class="pill muted">капитал вне рынка</span></div>' +
+                            (a.note ? '<div class="local">' + escapeHtml(a.note) + '</div>' : '') +
+                            '</div>';
+                        return;
+                    }
+
+                    if (cat === 'gold') {
+                        const count = Number(a.count) || 0;
+                        const dayPct = goldQuote ? goldQuote.dayPct : 0;
+                        const dayUsd = goldQuote ? mark * (dayPct / 100) : 0;
+                        const profit = mark - cost;
+                        const profitPct = cost > 0 ? (profit / cost) * 100 : 0;
+                        const dayPos = dayPct >= 0;
+                        const profitPos = profit >= 0;
+                        const daySign = dayPos ? '+' : '';
+                        const profitSign = profitPos ? '+' : '';
+                        const priceLine = goldQuote
+                            ? '$' + fmt(mark) + ' <small>$' + fmt(goldQuote.perGram) + '/г</small>'
+                            : '$' + fmt(cost);
+                        cards +=
+                            '<div class="card' + (withdrawn ? ' withdrawn' : '') + '">' +
+                            '<div class="ticker">' + escapeHtml(a.name || '') + '</div>' +
+                            '<div class="name">' + escapeHtml(a.ticker || 'GLD') +
+                            (count ? ' · ' + fmt(count, 0) + ' г' : '') + '</div>' +
+                            '<div class="price">' + priceLine + '</div>' +
+                            '<div class="metric"><span class="metric-label">Сегодня:</span>' +
+                            '<span class="change ' + (dayPos ? 'positive' : 'negative') + '">' +
+                            (goldQuote
+                                ? daySign + fmt(dayPct) + '% · ' + daySign + '$' + fmt(Math.abs(dayUsd))
+                                : '—') +
+                            '</span></div>' +
+                            '<div class="metric"><span class="metric-label">С покупки:</span>' +
+                            '<span class="result ' + (profitPos ? 'positive' : 'negative') + '">' +
+                            (goldQuote
+                                ? profitSign + '$' + fmt(profit) + ' (' + profitSign + fmt(profitPct) + '%)'
+                                : '—') +
+                            '</span></div>' +
+                            '</div>';
+                        return;
+                    }
+
+                    let localLine = '';
+                    if (local > 0 && cur !== 'USD' && cur !== 'GLD') {
+                        localLine = '<div class="local">' + fmt(local, 2) + ' ' + escapeHtml(cur) + '</div>';
+                    } else if (Number(a.count) > 0 && cur === 'BYN') {
+                        localLine = '<div class="local">кол-во: ' + fmt(a.count, 0) + '</div>';
+                    }
+                    const maturity = a.maturity
+                        ? '<div class="metric"><span class="metric-label">Погашение:</span><span class="pill muted">' +
+                          escapeHtml(a.maturity) + (left != null ? ' · ' + left + ' дн.' : '') + '</span></div>'
+                        : '';
+                    const note = a.note ? '<div class="local">' + escapeHtml(a.note) + '</div>' : '';
+                    cards +=
+                        '<div class="card' + (withdrawn ? ' withdrawn' : '') + '">' +
+                        '<div class="ticker">' + escapeHtml(a.name || '') + '</div>' +
+                        '<div class="name">' + escapeHtml(a.ticker || a.category || '') + '</div>' +
+                        '<div class="price">$' + fmt(a.amount_usd) + '</div>' +
+                        localLine +
+                        (rate > 0
+                            ? '<div class="metric"><span class="metric-label">Ставка:</span><span class="pill rate">' +
+                              fmt(rate, 2) + '%</span></div>'
+                            : '') +
+                        earnedMetricHtml(earned, costForPct) +
+                        maturity +
+                        (withdrawn ? '<div class="metric"><span class="pill warn">выведено</span></div>' : '') +
+                        note +
+                        '</div>';
+                });
+                const earnedSub =
+                    earnedCat > 0
+                        ? ' · выплаты +$' + fmt(earnedCat)
+                        : earnedCat < 0
+                          ? ' · −$' + fmt(Math.abs(earnedCat))
+                          : '';
+                sectionsHtml +=
+                    '<div class="section"><div class="section-header">' +
+                    '<span class="title">' + (CAT_TITLE[cat] || cat) + '</span>' +
+                    '<span class="sub">$' + fmt(sum) + ' · ' + fmt(pct, 1) + '%' + earnedSub + '</span></div>' +
+                    '<div class="card-grid">' + cards + '</div></div>';
+            });
+            document.getElementById('sections').innerHTML = sectionsHtml;
+
+            document.getElementById('summaryBlock').innerHTML =
+                '<div><span class="label">Активных позиций</span></div>' +
+                '<div><span class="value">' + active.length + '</span></div>' +
+                '<div><span class="label">Всего выплат</span></div>' +
+                '<div><span class="value">+$' + fmt(incomeUsd) + '</span></div>' +
+                '<div><span class="label">USD/BYN (' +
+                (window.__fxSource === 'nbrb' ? 'НБРБ' : window.__fxSource === 'er-api' ? 'er-api' : 'запас') +
+                ')</span></div>' +
+                '<div><span class="value">' + fmt(usdByn, 4) + '</span></div>' +
+                '<div><span class="label">Старт инвестиций</span></div>' +
+                '<div><span class="value">' + escapeHtml(startStr) + '</span></div>';
+
+            const sortedIncome = income.slice().sort(function (a, b) {
+                const da = parseRuDate(a.date); const db = parseRuDate(b.date);
+                return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
+            });
+            let incHtml = '';
+            let payCount = 0;
+            sortedIncome.forEach(function (row) {
+                const amt = Number(row.amount) || 0;
+                if (!amt && !row.note) return;
+                payCount += 1;
+                const byn = Number(row.amount_byn) || 0;
+                const extra = byn > 0 ? ' · ' + fmt(byn) + ' BYN' : '';
+                const note = row.note ? ' · ' + escapeHtml(row.note) : '';
+                incHtml +=
+                    '<div class="history-item">' +
+                    '<span><span class="badge-inc">Выплата</span> ' + escapeHtml(row.asset || '') +
+                    ' — ' + fmt(amt) + ' ' + escapeHtml(row.currency || 'USD') + extra + note + '</span>' +
+                    '<span class="date">' + escapeHtml(row.date || '') + '</span></div>';
+            });
+            document.getElementById('incomeList').innerHTML = incHtml || '<div class="history-item">Пока нет выплат</div>';
+            const countEl = document.getElementById('incomeHistoryCount');
+            if (countEl) {
+                countEl.textContent = payCount ? '(' + payCount + ')' : '';
+            }
+        }
+
+        (function setupIncomeAccordion() {
+            const box = document.getElementById('incomeHistory');
+            const btn = document.getElementById('incomeHistoryToggle');
+            if (!box || !btn) return;
+            btn.addEventListener('click', function () {
+                const open = box.classList.toggle('open');
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        })();
+
+        async function trySeedSheets(assets, income, meta) {
+            try {
+                await Promise.all([
+                    HelpersAPI.saveSheet('InvestAssets', assets),
+                    HelpersAPI.saveSheet('InvestIncome', income),
+                    HelpersAPI.saveSheet('InvestMeta', meta)
+                ]);
+                return true;
+            } catch (e) {
+                console.warn('seed failed', e);
+                return false;
+            }
+        }
+
+        async function load() {
+            const loading = document.getElementById('loadingMessage');
+            const content = document.getElementById('content');
+            const err = document.getElementById('errorMessage');
+            const sync = document.getElementById('syncStatus');
+            const [usdByn, goldQuote] = await Promise.all([fetchUsdByn(), fetchGoldQuote()]);
+            let assets = null;
+            let income = null;
+            let meta = null;
+            let fromSheets = false;
+            try {
+                const loaded = await Promise.all([
+                    HelpersAPI.loadSheet('InvestAssets'),
+                    HelpersAPI.loadSheet('InvestIncome'),
+                    HelpersAPI.loadSheet('InvestMeta')
+                ]);
+                assets = loaded[0];
+                income = loaded[1];
+                meta = loaded[2];
+                fromSheets = true;
+            } catch (e) {
+                console.warn(e);
+            }
+
+            if (!assets || !assets.length) {
+                assets = SEED_ASSETS;
+                income = income && income.length ? income : SEED_INCOME;
+                meta = meta && meta.length ? meta : SEED_META;
+                const seeded = await trySeedSheets(assets, income, meta);
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                if (seeded) {
+                    sync.textContent = '☁️ Сид записан в Google Sheets';
+                    sync.style.color = '#166534';
+                } else {
+                    sync.textContent = '📦 Локальный сид · обнови Code.gs и Redeploy Web App';
+                    sync.style.color = '#92400e';
+                    err.style.display = 'block';
+                    err.textContent = '⚠️ Вставь обновлённый apps-script/Code.gs в Google Apps Script → Deploy → Manage deployments → Edit → New version. Листы InvestAssets / InvestIncome / InvestMeta создадутся сами.';
+                }
+                render(assets, income, meta, usdByn, goldQuote);
+                return;
+            }
+
+            income = income || [];
+            meta = meta || SEED_META;
+
+            const cashFix = ensureCashReserve(assets);
+            assets = cashFix.assets;
+            const vgdoFix = ensureVgdoPair(assets, income);
+            assets = vgdoFix.assets;
+            income = vgdoFix.income;
+
+            const needSave = fromSheets && (cashFix.changed || vgdoFix.changed);
+            if (needSave) {
+                try {
+                    await Promise.all([
+                        HelpersAPI.saveSheet('InvestAssets', assets),
+                        HelpersAPI.saveSheet('InvestIncome', income)
+                    ]);
+                    sync.textContent = '☁️ Данные поправлены (НЗ / 2×ВГДО) и сохранены';
+                    sync.style.color = '#166534';
+                } catch (e) {
+                    console.warn(e);
+                    sync.textContent = fromSheets ? '☁️ Данные из Google Sheets' : '📦 Локальные данные';
+                    sync.style.color = '#166534';
+                }
+            } else {
+                sync.textContent = fromSheets ? '☁️ Данные из Google Sheets' : '📦 Локальные данные';
+                sync.style.color = '#166534';
+            }
+
+            loading.style.display = 'none';
+            content.style.display = 'block';
+            render(assets, income, meta, usdByn, goldQuote);
+        }
+
+        load();
+    })();
+    </script>
+</body>
+</html>

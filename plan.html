@@ -70,6 +70,15 @@
       border-color: #cbd5e1;
     }
 
+    .nav-btn.invest {
+      background: white;
+      border-color: #e2e8f0;
+      color: #0f172a;
+    }
+    .nav-btn.invest:hover {
+      background: #f8fafc;
+      border-color: #cbd5e1;
+    }
     .nav-btn.moex {
       background: white;
       border-color: #e2e8f0;
@@ -310,6 +319,7 @@
     <div class="nav-links">
       <a href="plan.html" class="nav-btn plan">📋 Plan</a>
       <a href="budget.html" class="nav-btn budget">💰 Budget</a>
+      <a href="invest.html" class="nav-btn invest">📈 Invest</a>
       <a href="index.html" class="nav-btn moex">🏦 MOEX</a>
     </div>
   </nav>
@@ -356,16 +366,8 @@
   }
 
   async function fetchUsdRate() {
-    try {
-      const resp = await fetch('https://api.nbrb.by/exrates/rates/USD?parammode=2');
-      if (!resp.ok) throw new Error('nbrb_http');
-      const data = await resp.json();
-      const rate = Number(data.Cur_OfficialRate) / (Number(data.Cur_Scale) || 1);
-      if (Number.isFinite(rate) && rate > 0) usdRate = rate;
-    } catch (e) {
-      console.warn('NBRB USD for plan failed, fallback 3:', e);
-      usdRate = 3;
-    }
+    const fx = await HelpersAPI.fetchFxRates({ usdByn: 3, eurByn: 3.25 });
+    usdRate = fx.usdByn;
   }
 
   function scheduleSave() {

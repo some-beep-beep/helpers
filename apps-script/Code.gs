@@ -18,7 +18,14 @@ const ALLOWED_SHEETS = {
   Dividends: ['ticker', 'name', 'amount_usd', 'date'],
   Budget: ['id', 'name', 'byn'],
   BudgetSettings: ['total_byn', 'usd_rate', 'eur_rate'],
-  Plan: ['month', 'item', 'amount', 'type']
+  Plan: ['month', 'item', 'amount', 'type'],
+  // Invest page (everything except RU stocks + BTC)
+  InvestAssets: [
+    'id', 'name', 'category', 'ticker', 'amount_usd', 'amount_local',
+    'currency', 'count', 'rate_pct', 'maturity', 'status', 'note'
+  ],
+  InvestIncome: ['asset', 'date', 'amount', 'currency', 'amount_byn', 'note'],
+  InvestMeta: ['key', 'value']
 };
 
 function doGet(e) {
@@ -125,10 +132,21 @@ function parseBody_(e) {
   }
 }
 
-function readSheet_(sheetName) {
+function ensureSheet_(sheetName) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ss.getSheetByName(sheetName);
-  if (!sh) throw new Error('sheet_missing:' + sheetName);
+  var sh = ss.getSheetByName(sheetName);
+  const headers = ALLOWED_SHEETS[sheetName];
+  if (!sh) {
+    sh = ss.insertSheet(sheetName);
+    if (headers && headers.length) {
+      sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+    }
+  }
+  return sh;
+}
+
+function readSheet_(sheetName) {
+  const sh = ensureSheet_(sheetName);
 
   const values = sh.getDataRange().getDisplayValues();
   if (!values.length) return [];
@@ -158,10 +176,7 @@ function readSheet_(sheetName) {
 }
 
 function writeSheet_(sheetName, rows) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = ss.getSheetByName(sheetName);
-  if (!sh) throw new Error('sheet_missing:' + sheetName);
-
+  const sh = ensureSheet_(sheetName);
   const headers = ALLOWED_SHEETS[sheetName];
   const lastRow = Math.max(sh.getLastRow(), 1);
   const lastCol = Math.max(sh.getLastColumn(), headers.length);
@@ -195,7 +210,11 @@ function coerce_(sheetName, header, value) {
     Dividends: { amount_usd: true },
     Budget: { byn: true },
     BudgetSettings: { total_byn: true, usd_rate: true, eur_rate: true },
-    Plan: { amount: true }
+    Plan: { amount: true },
+    InvestAssets: {
+      amount_usd: true, amount_local: true, count: true, rate_pct: true
+    },
+    InvestIncome: { amount: true, amount_byn: true }
   };
 
   if (numericHeaders[sheetName] && numericHeaders[sheetName][header]) {
