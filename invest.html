@@ -3,46 +3,61 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Invest — облигации, токены, вклады, золото</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <title>Invest — весь портфель</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6fa; min-height: 100vh; padding: 0; }
         .nav-bar {
-            position: sticky; top: 0; z-index: 100;
-            display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-            gap: 16px 20px; background: white; padding: 16px 28px;
+            display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between;
+            gap: 12px; background: white; padding: 10px 20px;
             border-bottom: 1px solid #e9edf4; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
         }
-        .nav-logo { font-weight: 700; font-size: 20px; color: #0f172a; display: flex; align-items: center; gap: 6px; }
-        .nav-logo span { color: #2563eb; }
-        .nav-links { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
-        .nav-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 10px 22px; border-radius: 40px; font-weight: 600; font-size: 16px;
-            color: #1e293b; text-decoration: none; border: 1px solid #e2e8f0; background: #f8fafc;
-            transition: 0.15s ease;
+        .nav-logo {
+            font-weight: 700; font-size: 16px; color: #0f172a;
+            display: flex; align-items: center; gap: 5px; flex: 0 0 auto; white-space: nowrap;
         }
-        .nav-btn:hover { background: #f1f5f9; border-color: #cbd5e1; transform: translateY(-1px); }
+        .nav-logo span { color: #2563eb; }
+        .nav-links {
+            display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end;
+            gap: 6px; min-width: 0;
+        }
+        .nav-btn {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 8px 16px; border-radius: 22px; font-weight: 600; font-size: 14px;
+            color: #1e293b; text-decoration: none; border: 1px solid #e2e8f0; background: #f8fafc;
+            transition: 0.15s ease; white-space: nowrap;
+        }
+        .nav-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
         .nav-btn.invest {
             background: #2563eb; color: white; border-color: #2563eb;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
         }
         .nav-btn.invest:hover { background: #1d4ed8; border-color: #1d4ed8; }
-        @media (max-width: 700px) {
-            .nav-bar { flex-direction: column; align-items: stretch; padding: 16px 20px; }
-            .nav-links { justify-content: center; }
-            .nav-btn { flex: 1 0 auto; justify-content: center; }
+        @media (max-width: 520px) {
+            .nav-bar { padding: 8px 12px; gap: 8px; }
+            .nav-btn { padding: 7px 12px; font-size: 13px; }
+            .nav-logo { font-size: 14px; }
         }
         .container { max-width: 960px; margin: 0 auto; padding: 24px; }
         .page-title {
-            display: flex; flex-wrap: wrap; align-items: baseline; gap: 12px 16px; margin-bottom: 20px;
+            display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 20px;
         }
-        h1 { font-size: 26px; margin: 0; font-weight: 600; }
+        .page-title-row {
+            display: flex; flex-wrap: nowrap; align-items: baseline;
+            justify-content: space-between; gap: 12px;
+            width: 100%; min-width: 0;
+        }
+        h1 { font-size: 26px; margin: 0; font-weight: 600; flex: 0 0 auto; }
         .subhead {
             color: #475569; margin: 0; border-left: 4px solid #2563eb;
             padding-left: 16px; font-size: 15px;
         }
-        .sync { font-size: 13px; color: #64748b; margin-bottom: 18px; }
+        .sync {
+            font-size: 13px; color: #64748b; margin: 0;
+            text-align: right; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto;
+        }
         .section {
             background: white; border-radius: 16px; border: 1px solid #e9edf4;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); padding: 18px 20px 20px; margin-bottom: 20px;
@@ -91,13 +106,31 @@
         .total-meta .earn.neg { color: #991b1b; }
         .result-block {
             background: white; padding: 18px 24px; border-radius: 16px; border: 1px solid #e9edf4;
-            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
-            margin-bottom: 16px; gap: 12px;
+            display: flex; flex-direction: column; gap: 10px;
+            margin-bottom: 16px;
         }
-        .result-block .result-label { font-size: 15px; color: #475569; }
-        .result-block .result-value { font-size: 24px; font-weight: 700; color: #166534; text-align: right; }
+        .result-block-top {
+            display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+        }
+        .result-block .result-label {
+            font-size: 15px; color: #475569; flex: 1 1 auto; min-width: 0;
+        }
+        .result-block .result-value {
+            font-size: 24px; font-weight: 700; color: #166534;
+            text-align: right; flex: 0 0 auto; white-space: nowrap;
+        }
         .result-block .result-value.neg { color: #991b1b; }
-        .result-usd { font-size: 15px; color: #166534; margin-top: 2px; }
+        .result-usd {
+            font-size: 13px; color: #166534; line-height: 1.55;
+            text-align: right; width: 100%;
+            display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
+        }
+        .result-usd .line { display: block; }
+        @media (max-width: 640px) {
+            .result-block-top { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .result-block .result-value { text-align: left; }
+            .result-usd { text-align: left; align-items: flex-start; }
+        }
         .summary-block {
             background: white; padding: 18px 24px; border-radius: 16px; border: 1px solid #e9edf4;
             margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px;
@@ -138,18 +171,54 @@
         .badge-inc { color: #166534; font-weight: 500; }
         .total-investments {
             background: white; padding: 20px 24px; border-radius: 16px; border: 1px solid #e9edf4;
-            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px;
+            display: flex; flex-direction: column; gap: 12px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); margin-bottom: 24px;
         }
+        .total-investments-top {
+            display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
+        }
+        .total-investments-top .left {
+            display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; min-width: 0;
+        }
         .total-investments .label { font-size: 18px; font-weight: 600; color: #0f172a; }
-        .total-investments .value { font-size: 28px; font-weight: 700; color: #1d4ed8; }
+        .total-investments .value {
+            font-size: 28px; font-weight: 700; color: #1d4ed8;
+            text-align: right; white-space: nowrap; line-height: 1.1;
+        }
         .total-investments .sub { font-size: 14px; color: #64748b; }
         .total-meta {
-            width: 100%; margin-top: 4px; padding-top: 12px; border-top: 1px solid #eef2f8;
-            font-size: 14px; color: #64748b; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px 20px;
+            width: 100%; padding-top: 12px; border-top: 1px solid #eef2f8;
+            font-size: 14px; color: #64748b; line-height: 1.45;
+            display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: 8px 20px;
+        }
+        .total-meta > span {
+            display: inline-flex; align-items: center; gap: 4px; min-height: 22px;
         }
         .total-meta strong { color: #0f172a; font-weight: 600; }
+        @media (max-width: 640px) {
+            .total-investments-top { flex-direction: column; align-items: flex-start; gap: 6px; }
+            .total-investments .value { text-align: left; }
+        }
         .apr-positive { color: #166534; }
+        .apr-negative { color: #991b1b; }
+        .mini-summary {
+            margin-top: 14px; padding-top: 12px; border-top: 1px solid #f1f5f9;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px;
+        }
+        .mini-summary .label { font-size: 13px; color: #64748b; }
+        .mini-summary .value { font-size: 15px; font-weight: 600; text-align: right; color: #0f172a; }
+        .mini-summary .value.positive { color: #166534; }
+        .mini-summary .value.negative { color: #991b1b; }
+        .timer-bar {
+            margin-top: 12px; background: #e9edf4; border-radius: 30px; height: 4px; overflow: hidden;
+        }
+        .timer-bar-fill { background: #2563eb; height: 100%; width: 100%; border-radius: 30px; transition: width 1s linear; }
+        .update-line {
+            display: flex; justify-content: space-between; align-items: center; gap: 12px;
+            margin-top: 6px; font-size: 13px; color: #94a3b8; flex-wrap: wrap;
+        }
+        .badge-buy { color: #2563eb; font-weight: 500; }
+        .badge-div { color: #166534; font-weight: 500; }
         .loading { text-align: center; padding: 30px; color: #64748b; background: white; border-radius: 20px; border: 1px solid #e9edf4; }
         .error { color: #991b1b; background: #fee2e2; padding: 14px 18px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #fecaca; }
         .footer { margin-top: 12px; font-size: 13px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
@@ -180,7 +249,7 @@
         <div class="auth-card">
             <div style="font-size:32px;margin-bottom:8px;">🔐</div>
             <h2>Введите код</h2>
-            <p>Доступ к Invest</p>
+            <p>Доступ к портфелю</p>
             <input type="password" id="authInput" maxlength="6" placeholder="• • • • • •" />
             <button class="auth-btn" id="authBtn">▶ Войти</button>
             <div class="auth-error" id="authError"></div>
@@ -193,25 +262,44 @@
             <a href="plan.html" class="nav-btn plan">📋 Plan</a>
             <a href="budget.html" class="nav-btn budget">💰 Budget</a>
             <a href="invest.html" class="nav-btn invest">📈 Invest</a>
-            <a href="index.html" class="nav-btn moex">🏦 MOEX</a>
         </div>
     </nav>
 
     <div class="container" id="mainContent">
         <div class="page-title">
-            <h1>📈 Invest</h1>
-            <div class="subhead">Облигации · токены · вклады · золото · НЗ</div>
+            <div class="page-title-row">
+                <h1>📈 Invest</h1>
+                <div class="sync" id="syncStatus">⏳ Загрузка из Google Sheets…</div>
+            </div>
+            <div class="subhead">Акции MOEX · BTC · облигации · токены · вклады · золото · НЗ</div>
         </div>
-        <div class="sync" id="syncStatus">⏳ Загрузка из Google Sheets…</div>
         <div id="errorMessage" class="error" style="display:none;"></div>
-        <div id="loadingMessage" class="loading">⏳ Загрузка…</div>
+        <div id="loadingMessage" class="loading">⏳ Загрузка портфеля и котировок…</div>
 
         <div id="content" style="display:none;">
             <div class="result-block">
-                <span class="result-label">💰 Результат Invest (доход)</span>
-                <div style="text-align:right;">
+                <div class="result-block-top">
+                    <span class="result-label">💰 Заработал (выплаты + рост акций)</span>
                     <div class="result-value" id="incomeTotal">—</div>
-                    <div class="result-usd" id="incomePerMonth">—</div>
+                </div>
+                <div class="result-usd" id="incomePerMonth">—</div>
+            </div>
+
+            <div class="total-investments">
+                <div class="total-investments-top">
+                    <div class="left">
+                        <span class="label">💼 Всего Invest</span>
+                        <span class="sub">текущая стоимость позиций, без НЗ</span>
+                    </div>
+                    <span class="value" id="totalValue">—</span>
+                </div>
+                <div class="total-meta">
+                    <span>💰 Заработал: <strong id="investEarned" class="earn">—</strong></span>
+                    <span>📈 Акции: <strong id="stocksPnl" class="earn">—</strong></span>
+                    <span>₿ BTC: <strong id="btcPnl" class="earn">—</strong></span>
+                    <span>🥇 Золото: <strong id="goldPnl" class="earn">—</strong></span>
+                    <span>⏱ С начала: <strong id="investDays">—</strong></span>
+                    <span>📈 Годовых (выплаты + P&amp;L): <strong id="investApr" class="apr-positive">—</strong></span>
                 </div>
             </div>
 
@@ -229,37 +317,33 @@
                 </div>
             </div>
 
-            <div class="total-investments">
-                <div>
-                    <span class="label">💼 Всего Invest</span>
-                    <span class="sub">(без RU акций, BTC и НЗ)</span>
-                </div>
-                <div>
-                    <span class="value" id="totalValue">—</span>
-                </div>
-                <div class="total-meta">
-                    <span>💰 Заработал (выплаты): <strong id="investEarned" class="earn">—</strong></span>
-                    <span>🥇 Золото P&amp;L: <strong id="goldPnl" class="earn">—</strong></span>
-                    <span>⏱ С начала: <strong id="investDays">—</strong></span>
-                    <span>📈 Годовых (по выплатам): <strong id="investApr" class="apr-positive">—</strong></span>
+            <div class="history" id="tradeHistory">
+                <button type="button" class="history-toggle" id="tradeHistoryToggle" aria-expanded="false">
+                    <h3>📋 История сделок <span class="count" id="tradeHistoryCount"></span></h3>
+                    <span class="history-chevron" aria-hidden="true">▼</span>
+                </button>
+                <div class="history-body">
+                    <div id="tradeList"></div>
                 </div>
             </div>
 
             <div class="total-investments" id="totalWithCashBlock">
-                <div>
-                    <span class="label">🏦 Все сбережения</span>
-                    <span class="sub">Invest + НЗ</span>
-                </div>
-                <div>
+                <div class="total-investments-top">
+                    <div class="left">
+                        <span class="label">🏦 Все сбережения</span>
+                        <span class="sub">Invest + НЗ</span>
+                    </div>
                     <span class="value" id="totalWithCash">—</span>
                 </div>
                 <div class="total-meta">
-                    <span>💼 Invest: <strong id="investOnlyMeta">—</strong></span>
+                    <span>📈 Акции: <strong id="metaStocks">—</strong></span>
+                    <span>₿ BTC: <strong id="metaBtc">—</strong></span>
+                    <span>📄 Прочие: <strong id="metaOther">—</strong></span>
                     <span>💵 НЗ: <strong id="cashReserve">—</strong></span>
                 </div>
             </div>
 
-            <div class="footer">Данные из Google Sheets · курсы · золото PAXG/Binance · страница Invest</div>
+            <div class="footer">Sheets · MOEX (задержка 15 мин) · BTC и золото Binance · USD/RUB ЦБ · USD/BYN НБРБ. Выплаты в капитал не входят.</div>
         </div>
     </div>
 
@@ -600,6 +684,382 @@
             return { assets: list, changed: changed };
         }
 
+        const STOCK_NAMES = {
+            SBER: 'Сбербанк',
+            YDEX: 'Яндекс',
+            MOEX: 'Мосбиржа',
+            LKOH: 'Лукойл',
+            TATN: 'Татнефть',
+            CHMF: 'Северсталь',
+            PLZL: 'Полюс',
+            HEAD: 'Хэдхантер',
+            VKCO: 'ВК'
+        };
+        const FALLBACK_PRICES = {
+            SBER: 293.01, YDEX: 3434.50, MOEX: 155.38, LKOH: 6059,
+            TATN: 619.10, CHMF: 607, PLZL: 982.20, HEAD: 2790, VKCO: 136.85
+        };
+        const market = {
+            trades: [
+                { ticker: 'SBER', shares: 5, price: 294.58, date: '14.07.2026 15:30' },
+                { ticker: 'SBER', shares: 13, price: 280.00, date: '17.07.2026 11:19' },
+                { ticker: 'YDEX', shares: 2, price: 3344.50, date: '17.07.2026 11:20' },
+                { ticker: 'MOEX', shares: 40, price: 136.73, date: '17.07.2026 10:21' },
+                { ticker: 'LKOH', shares: 1, price: 4165.00, date: '24.08.2026 16:02' },
+                { ticker: 'TATN', shares: 9, price: 515.50, date: '21.08.2026 11:19' },
+                { ticker: 'CHMF', shares: 8, price: 607.00, date: '21.08.2026 11:03' },
+                { ticker: 'SBER', shares: 43, price: 277.69, date: '09.09.2026 18:45' },
+                { ticker: 'TATN', shares: 23, price: 619.10, date: '09.09.2026 18:44' },
+                { ticker: 'PLZL', shares: 8, price: 982.20, date: '09.09.2026 17:57' },
+                { ticker: 'YDEX', shares: 3, price: 3880.00, date: '16.09.2026 03:00' },
+                { ticker: 'YDEX', shares: 1, price: 3880.00, date: '16.09.2026 03:00' },
+                { ticker: 'HEAD', shares: 1, price: 2790.00, date: '17.09.2026 12:12' },
+                { ticker: 'HEAD', shares: 5, price: 2790.00, date: '17.09.2026 12:11' },
+                { ticker: 'LKOH', shares: 2, price: 6059.00, date: '19.10.2026 13:17' },
+                { ticker: 'LKOH', shares: 2, price: 6059.00, date: '19.10.2026 13:17' },
+                { ticker: 'SBER', shares: 1, price: 293.01, date: '21.10.2026 15:16' },
+                { ticker: 'SBER', shares: 29, price: 293.01, date: '21.10.2026 15:16' },
+                { ticker: 'VKCO', shares: 60, price: 136.85, date: '21.10.2026 15:20' },
+                { ticker: 'MOEX', shares: 10, price: 155.38, date: '21.10.2026 15:23' },
+                { ticker: 'MOEX', shares: 30, price: 155.38, date: '21.10.2026 15:23' },
+                { ticker: 'YDEX', shares: 3, price: 3434.50, date: '21.10.2026 16:57' }
+            ],
+            dividends: [
+                { ticker: 'SBER', name: 'Сбербанк', amountUSD: 6.56, date: '06.08.2026' },
+                { ticker: 'YDEX', name: 'Яндекс', amountUSD: 6.23, date: '25.09.2026' }
+            ],
+            btcAmount: 0.01053411,
+            btcCost: 860.04,
+            usdRub: 88,
+            usdRubLive: false,
+            btcPrice: 0,
+            btcDayPct: 0,
+            btcOk: false,
+            priceMap: {},
+            changeMap: {},
+            priceFallback: false,
+            quotesReady: false,
+            updatedLabel: ''
+        };
+        let view = null;
+        let paintLock = false;
+        let quoteLoop = null;
+        let timerInterval = null;
+        let timerSeconds = 60;
+
+        function fetchTimed(url, timeoutMs) {
+            const ctrl = new AbortController();
+            const timer = setTimeout(function () { ctrl.abort(); }, timeoutMs || 8000);
+            return fetch(url, { signal: ctrl.signal }).finally(function () { clearTimeout(timer); });
+        }
+
+        function positionsFromTrades(trades) {
+            const portfolio = {};
+            (trades || []).forEach(function (t) {
+                const ticker = String(t.ticker || '');
+                if (!ticker) return;
+                if (!portfolio[ticker]) portfolio[ticker] = { shares: 0, cost: 0 };
+                const shares = Number(t.shares) || 0;
+                portfolio[ticker].shares += shares;
+                portfolio[ticker].cost += shares * (Number(t.price) || 0);
+            });
+            return portfolio;
+        }
+
+        function marketFigures() {
+            const portfolio = positionsFromTrades(market.trades);
+            const rate = market.usdRub > 0 ? market.usdRub : 88;
+            let costRub = 0;
+            let currentRub = 0;
+            Object.keys(portfolio).forEach(function (ticker) {
+                const pos = portfolio[ticker];
+                const price = Number(market.priceMap[ticker]) || 0;
+                costRub += pos.cost;
+                currentRub += price > 0 ? price * pos.shares : pos.cost;
+            });
+            const btcKnown = !!(market.btcOk && market.btcPrice > 0);
+            const btcMark = btcKnown ? market.btcPrice * market.btcAmount : market.btcCost;
+            const divByTicker = {};
+            let divUsd = 0;
+            (market.dividends || []).forEach(function (d) {
+                const usd = Number(d.amountUSD) || 0;
+                divUsd += usd;
+                const key = String(d.ticker || '');
+                if (key) divByTicker[key] = (divByTicker[key] || 0) + usd;
+            });
+            return {
+                portfolio: portfolio,
+                rate: rate,
+                costRub: costRub,
+                currentRub: currentRub,
+                stocksCostUsd: rate > 0 ? costRub / rate : 0,
+                stocksCurrentUsd: rate > 0 ? currentRub / rate : 0,
+                btcKnown: btcKnown,
+                btcCurrent: btcMark,
+                btcPnl: btcKnown ? btcMark - market.btcCost : 0,
+                divUsd: divUsd,
+                divByTicker: divByTicker
+            };
+        }
+
+        async function fetchUsdRub() {
+            try {
+                const resp = await fetchTimed('https://www.cbr-xml-daily.ru/daily_json.js', 8000);
+                if (!resp.ok) throw new Error('cbr');
+                const data = await resp.json();
+                const value = data && data.Valute && data.Valute.USD && Number(data.Valute.USD.Value);
+                if (value > 0) return value;
+            } catch (e) {
+                console.warn('USD/RUB', e);
+            }
+            return null;
+        }
+
+        async function fetchBtcQuote() {
+            try {
+                const resp = await fetchTimed('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', 8000);
+                if (!resp.ok) throw new Error('btc');
+                const data = await resp.json();
+                const price = parseFloat(data.lastPrice);
+                const day = parseFloat(data.priceChangePercent);
+                if (price > 0) return { price: price, dayPct: Number.isFinite(day) ? day : 0 };
+            } catch (e) {
+                console.warn('BTC', e);
+            }
+            return null;
+        }
+
+        async function fetchMoexQuotes(tickers) {
+            if (!tickers.length) return { priceMap: {}, changeMap: {} };
+            try {
+                const url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?securities=' +
+                    encodeURIComponent(tickers.join(','));
+                const resp = await fetchTimed(url, 8000);
+                if (!resp.ok) throw new Error('moex');
+                const data = await resp.json();
+                const rows = (data.marketdata && data.marketdata.data) || [];
+                const priceMap = {};
+                const changeMap = {};
+                rows.forEach(function (row) {
+                    const ticker = row[0];
+                    const last = row[12];
+                    const change = row[13];
+                    if (ticker && last != null) {
+                        priceMap[ticker] = Number(last);
+                        changeMap[ticker] = change != null ? Number(change) : 0;
+                    }
+                });
+                return { priceMap: priceMap, changeMap: changeMap };
+            } catch (e) {
+                console.warn('MOEX', e);
+                return null;
+            }
+        }
+
+        async function refreshQuotes() {
+            const tickers = Object.keys(positionsFromTrades(market.trades));
+            const loaded = await Promise.all([
+                fetchUsdRub(),
+                fetchBtcQuote(),
+                fetchMoexQuotes(tickers)
+            ]);
+            if (loaded[0]) {
+                market.usdRub = loaded[0];
+                market.usdRubLive = true;
+            }
+            if (loaded[1]) {
+                market.btcPrice = loaded[1].price;
+                market.btcDayPct = loaded[1].dayPct;
+                market.btcOk = true;
+            }
+            market.priceFallback = !loaded[2];
+            if (loaded[2]) {
+                market.priceMap = loaded[2].priceMap;
+                market.changeMap = loaded[2].changeMap;
+            }
+            tickers.forEach(function (ticker) {
+                if (!(Number(market.priceMap[ticker]) > 0) && FALLBACK_PRICES[ticker]) {
+                    market.priceMap[ticker] = FALLBACK_PRICES[ticker];
+                    market.changeMap[ticker] = 0;
+                    market.priceFallback = true;
+                }
+            });
+            market.quotesReady = true;
+            market.updatedLabel = 'Обновлено: ' + new Date().toLocaleTimeString('ru-RU') +
+                (market.priceFallback ? ' · часть цен запасная' : '');
+        }
+
+        async function loadMarketSheets() {
+            if (!window.HelpersAPI) return;
+            try {
+                const loaded = await Promise.all([
+                    HelpersAPI.loadSheet('BTC'),
+                    HelpersAPI.loadSheet('Dividends'),
+                    HelpersAPI.loadSheet('Portfolio')
+                ]);
+                const btcRows = loaded[0] || [];
+                const divRows = loaded[1] || [];
+                const tradeRows = loaded[2] || [];
+                if (btcRows[0]) {
+                    const amt = parseFloat(btcRows[0].amount);
+                    const cost = parseFloat(btcRows[0].cost_usd);
+                    if (amt > 0) market.btcAmount = amt;
+                    if (cost > 0) market.btcCost = cost;
+                }
+                if (divRows.length) {
+                    market.dividends = divRows.map(function (d) {
+                        return {
+                            ticker: String(d.ticker || ''),
+                            name: String(d.name || d.ticker || ''),
+                            amountUSD: parseFloat(d.amount_usd) || 0,
+                            date: String(d.date || '')
+                        };
+                    });
+                }
+                if (tradeRows.length) {
+                    market.trades = tradeRows.map(function (t) {
+                        return {
+                            ticker: String(t.ticker || ''),
+                            shares: parseFloat(t.shares) || 0,
+                            price: parseFloat(t.price) || 0,
+                            date: String(t.date || '')
+                        };
+                    });
+                }
+            } catch (e) {
+                console.warn('Market sheets', e);
+            }
+        }
+
+        function updateTimer() {
+            const fill = document.getElementById('timerBarFill');
+            const label = document.getElementById('timerLabel');
+            if (!fill || !label) return;
+            timerSeconds = 60;
+            fill.style.width = '100%';
+            label.textContent = '⏳ Обновление через 60 с';
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(function () {
+                timerSeconds -= 1;
+                const left = Math.max(timerSeconds, 0);
+                fill.style.width = (left / 60) * 100 + '%';
+                label.textContent = left > 0 ? '⏳ Обновление через ' + left + ' с' : '🔄 Обновление...';
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }, 1000);
+        }
+
+        function setPnl(id, value, pct, known) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (!known) {
+                el.textContent = '—';
+                el.className = 'earn';
+                return;
+            }
+            const sign = value >= 0 ? '+' : '−';
+            el.textContent = sign + '$' + fmt(Math.abs(value)) + ' (' + sign + fmt(Math.abs(pct)) + '%)';
+            el.className = 'earn' + (value >= 0 ? '' : ' neg');
+        }
+
+        function renderMarketHtml(fig, portfolioUsd) {
+            const tickers = Object.keys(fig.portfolio);
+            let cards = '';
+            tickers.forEach(function (ticker) {
+                const pos = fig.portfolio[ticker];
+                const price = Number(market.priceMap[ticker]) || 0;
+                const known = price > 0;
+                const change = Number(market.changeMap[ticker]) || 0;
+                const name = STOCK_NAMES[ticker] || ticker;
+                const currentRub = known ? price * pos.shares : pos.cost;
+                const profit = currentRub - pos.cost;
+                const profitPct = pos.cost > 0 ? (profit / pos.cost) * 100 : 0;
+                const profitPos = profit >= 0;
+                const dayPos = change >= 0;
+                const div = fig.divByTicker[ticker] || 0;
+                const shareLabel = fmt(pos.shares, pos.shares % 1 ? 2 : 0);
+                cards +=
+                    '<div class="card">' +
+                    '<div class="ticker">' + escapeHtml(ticker) + '</div>' +
+                    '<div class="name">' + escapeHtml(name) + ' · ' + shareLabel + ' шт.</div>' +
+                    '<div class="price">' + (known ? fmt(price) : '—') + ' <small>₽</small></div>' +
+                    '<div class="local">$' + fmt(currentRub / fig.rate) + '</div>' +
+                    '<div class="metric"><span class="metric-label">Сегодня:</span>' +
+                    '<span class="change ' + (known ? (dayPos ? 'positive' : 'negative') : '') + '">' +
+                    (known ? (dayPos ? '+' : '') + fmt(change) + '%' : '—') +
+                    '</span></div>' +
+                    '<div class="metric"><span class="metric-label">С покупки:</span>' +
+                    '<span class="result ' + (profitPos ? 'positive' : 'negative') + '">' +
+                    (profitPos ? '+' : '') + fmt(profit) + ' ₽ (' + (profitPos ? '+' : '') + fmt(profitPct) + '%)</span></div>' +
+                    (div > 0 ? earnedMetricHtml(div, pos.cost / fig.rate) : '') +
+                    '</div>';
+            });
+
+            const stocksPnlRub = fig.currentRub - fig.costRub;
+            const stocksPnlUsd = fig.stocksCurrentUsd - fig.stocksCostUsd;
+            const stocksPct = portfolioUsd > 0 ? (fig.stocksCurrentUsd / portfolioUsd) * 100 : 0;
+            const rubPos = stocksPnlRub >= 0;
+            const usdPos = stocksPnlUsd >= 0;
+            let html = '';
+            if (tickers.length) {
+                html +=
+                    '<div class="section"><div class="section-header">' +
+                    '<span class="title">📈 Акции</span>' +
+                    '<span class="sub">MOEX · $' + fmt(fig.stocksCurrentUsd) + ' · ' + fmt(stocksPct, 1) + '%' +
+                    ' · ' + (usdPos ? '+' : '−') + '$' + fmt(Math.abs(stocksPnlUsd)) + '</span></div>' +
+                    '<div class="card-grid">' + cards + '</div>' +
+                    '<div class="mini-summary">' +
+                    '<div><span class="label">Вложено (RUB)</span></div><div><span class="value">' + fmt(fig.costRub) + ' ₽</span></div>' +
+                    '<div><span class="label">Сейчас (RUB)</span></div><div><span class="value ' + (rubPos ? 'positive' : 'negative') + '">' + fmt(fig.currentRub) + ' ₽</span></div>' +
+                    '<div><span class="label">Вложено (USD)</span></div><div><span class="value">$' + fmt(fig.stocksCostUsd) + '</span></div>' +
+                    '<div><span class="label">Сейчас (USD)</span></div><div><span class="value ' + (usdPos ? 'positive' : 'negative') + '">$' + fmt(fig.stocksCurrentUsd) + '</span></div>' +
+                    '<div><span class="label">Результат</span></div><div><span class="value ' + (rubPos ? 'positive' : 'negative') + '">' +
+                    (rubPos ? '+' : '−') + fmt(Math.abs(stocksPnlRub)) + ' ₽ · ' + (usdPos ? '+' : '−') + '$' + fmt(Math.abs(stocksPnlUsd)) + '</span></div>' +
+                    '<div><span class="label">USD/RUB</span></div><div><span class="value">' + fmt(fig.rate, 2) + (market.usdRubLive ? ' · ЦБ' : ' · запас') + '</span></div>' +
+                    '</div>' +
+                    '<div class="timer-bar"><div class="timer-bar-fill" id="timerBarFill" style="width:100%;"></div></div>' +
+                    '<div class="update-line"><span id="timerLabel">⏳ Обновление через 60 с</span>' +
+                    '<span id="updateTime">' + escapeHtml(market.updatedLabel || '') + '</span></div></div>';
+            }
+
+            const btcPct = portfolioUsd > 0 ? (fig.btcCurrent / portfolioUsd) * 100 : 0;
+            const btcPos = fig.btcPnl >= 0;
+            const dayPos = market.btcDayPct >= 0;
+            const btcPctAbs = market.btcCost > 0 ? Math.abs(fig.btcPnl / market.btcCost) * 100 : 0;
+            const btcCard = fig.btcKnown
+                ? '<div class="card">' +
+                  '<div class="ticker">₿ BTC</div>' +
+                  '<div class="name">Биткоин · ' + fmt(market.btcAmount, 8) + '</div>' +
+                  '<div class="price">$' + fmt(fig.btcCurrent) + '</div>' +
+                  '<div class="local">$' + fmt(market.btcPrice) + ' / BTC</div>' +
+                  '<div class="metric"><span class="metric-label">Сегодня:</span>' +
+                  '<span class="change ' + (dayPos ? 'positive' : 'negative') + '">' +
+                  (dayPos ? '+' : '') + fmt(market.btcDayPct) + '%</span></div>' +
+                  '<div class="metric"><span class="metric-label">С покупки:</span>' +
+                  '<span class="result ' + (btcPos ? 'positive' : 'negative') + '">' +
+                  (btcPos ? '+' : '−') + '$' + fmt(Math.abs(fig.btcPnl)) +
+                  ' (' + (btcPos ? '+' : '−') + fmt(btcPctAbs) + '%)</span></div></div>'
+                : '<div class="card"><div class="ticker">₿ BTC</div><div class="name">Биткоин</div>' +
+                  '<div class="price">—</div>' +
+                  '<div class="local">котировка недоступна · в итоге по себестоимости $' + fmt(market.btcCost) + '</div></div>';
+
+            html +=
+                '<div class="section"><div class="section-header">' +
+                '<span class="title">₿ Биткоин</span>' +
+                '<span class="sub">$' + fmt(fig.btcCurrent) + ' · ' + fmt(btcPct, 1) + '%</span></div>' +
+                '<div class="card-grid">' + btcCard + '</div>' +
+                '<div class="mini-summary">' +
+                '<div><span class="label">Цена BTC</span></div><div><span class="value">' +
+                (fig.btcKnown ? '$' + fmt(market.btcPrice) : '—') + '</span></div>' +
+                '<div><span class="label">Вложено</span></div><div><span class="value">$' + fmt(market.btcCost) + '</span></div>' +
+                '<div><span class="label">Сейчас</span></div><div><span class="value ' +
+                (fig.btcKnown ? (btcPos ? 'positive' : 'negative') : '') + '">$' + fmt(fig.btcCurrent) + '</span></div>' +
+                '</div></div>';
+            return html;
+        }
+
         function earnedMetricHtml(earned, cost) {
             const pct = cost > 0 ? (earned / cost) * 100 : 0;
             if (earned > 0) {
@@ -651,10 +1111,15 @@
                     incomeLast30 += usd;
                 }
             });
-            const incomeMonth = incomeUsd / daysPassed * 30.44;
-            // годовых считаем от вложений без НЗ-налички
-            const apr = investedUsd > 0 ? (incomeUsd / investedUsd) * (365 / daysPassed) * 100 : 0;
-
+            // Капитал = текущая оценка позиций. Купоны и дивиденды в него не входят.
+            const fig = marketFigures();
+            (market.dividends || []).forEach(function (d) {
+                const dt = parseRuDate(d.date);
+                const usd = Number(d.amountUSD) || 0;
+                if (dt && dt.getTime() >= last30Start && dt.getTime() <= now + 86400000) {
+                    incomeLast30 += usd;
+                }
+            });
             let goldCost = 0;
             let goldCurrent = 0;
             active.forEach(function (a) {
@@ -664,21 +1129,50 @@
             });
             const goldPnl = goldCurrent - goldCost;
             const goldPnlPct = goldCost > 0 ? (goldPnl / goldCost) * 100 : 0;
+            const stocksPnl = fig.stocksCurrentUsd - fig.stocksCostUsd;
+            const stocksPnlPct = fig.stocksCostUsd > 0 ? (stocksPnl / fig.stocksCostUsd) * 100 : 0;
+            const btcPnlPct = market.btcCost > 0 ? (fig.btcPnl / market.btcCost) * 100 : 0;
+            const payoutsAll = incomeUsd + fig.divUsd;
+            // Итоговый доход: купоны + дивиденды + нереализ. рост/падение RU акций
+            const earnedAll = payoutsAll + stocksPnl;
+            const incomeMonth = earnedAll / daysPassed * 30.44;
+            const investCost = active
+                .filter(function (a) { return String(a.category) !== 'cash'; })
+                .reduce(function (s, a) { return s + (Number(a.amount_usd) || 0); }, 0);
+            const totalCost = investCost + fig.stocksCostUsd + market.btcCost;
+            // в APR акции уже в earnedAll — не дублируем stocksPnl
+            const unrealizedExtra = goldPnl + fig.btcPnl;
+            const apr = totalCost > 0 ? ((earnedAll + unrealizedExtra) / totalCost) * (365 / daysPassed) * 100 : 0;
+            const portfolioUsd = investedUsd + fig.stocksCurrentUsd + fig.btcCurrent;
+            const savingsUsd = portfolioUsd + cashUsd;
 
-            document.getElementById('incomeTotal').textContent = '+$' + fmt(incomeUsd);
-            document.getElementById('incomePerMonth').textContent =
-                'За 30 дн: +$' + fmt(incomeLast30) +
-                ' · ср. ≈ $' + fmt(incomeMonth) + ' / мес · $' + fmt(incomeUsd / daysPassed) + ' / день';
-            document.getElementById('totalValue').textContent = '$' + fmt(investedUsd);
-            document.getElementById('totalWithCash').textContent = '$' + fmt(totalUsd);
-            document.getElementById('investOnlyMeta').textContent = '$' + fmt(investedUsd);
+            const incomeTotalEl = document.getElementById('incomeTotal');
+            const earnSign = earnedAll >= 0 ? '+' : '−';
+            incomeTotalEl.textContent = earnSign + '$' + fmt(Math.abs(earnedAll));
+            incomeTotalEl.className = 'result-value' + (earnedAll >= 0 ? '' : ' neg');
+            const stocksSign = stocksPnl >= 0 ? '+' : '−';
+            document.getElementById('incomePerMonth').innerHTML =
+                '<span class="line">За 30 дн (выплаты): +$' + fmt(incomeLast30) +
+                ' · ср. ≈ $' + fmt(incomeMonth) + ' / мес · $' + fmt(earnedAll / daysPassed) + ' / день</span>' +
+                '<span class="line">купоны $' + fmt(incomeUsd) +
+                ' · дивиденды $' + fmt(fig.divUsd) + '</span>' +
+                '<span class="line">акции ' + stocksSign + '$' + fmt(Math.abs(stocksPnl)) + '</span>';
+            document.getElementById('totalValue').textContent = '$' + fmt(portfolioUsd);
+            document.getElementById('totalWithCash').textContent = '$' + fmt(savingsUsd);
+            document.getElementById('metaStocks').textContent = '$' + fmt(fig.stocksCurrentUsd);
+            document.getElementById('metaBtc').textContent = '$' + fmt(fig.btcCurrent);
+            document.getElementById('metaOther').textContent = '$' + fmt(investedUsd);
             document.getElementById('cashReserve').textContent = '$' + fmt(cashUsd);
             document.getElementById('investDays').textContent = daysPassed + ' ' + daysWord(daysPassed);
-            document.getElementById('investApr').textContent = (apr >= 0 ? '+' : '') + fmt(apr) + '%';
+            const aprEl = document.getElementById('investApr');
+            aprEl.textContent = (apr >= 0 ? '+' : '−') + fmt(Math.abs(apr)) + '%';
+            aprEl.className = apr >= 0 ? 'apr-positive' : 'apr-negative';
 
             const earnedEl = document.getElementById('investEarned');
-            earnedEl.textContent = '+$' + fmt(incomeUsd) + ' · ≈ $' + fmt(incomeMonth) + '/мес';
-            earnedEl.className = 'earn';
+            earnedEl.textContent = earnSign + '$' + fmt(Math.abs(earnedAll)) + ' · ≈ $' + fmt(incomeMonth) + '/мес';
+            earnedEl.className = 'earn' + (earnedAll >= 0 ? '' : ' neg');
+            setPnl('stocksPnl', stocksPnl, stocksPnlPct, fig.stocksCostUsd > 0);
+            setPnl('btcPnl', fig.btcPnl, btcPnlPct, fig.btcKnown);
 
             const goldPnlEl = document.getElementById('goldPnl');
             if (goldQuote && goldCost > 0) {
@@ -701,7 +1195,12 @@
             });
 
             let sectionsHtml = '';
+            let marketInserted = false;
             CAT_ORDER.forEach(function (cat) {
+                if (cat === 'cash' && !marketInserted) {
+                    sectionsHtml += renderMarketHtml(fig, portfolioUsd);
+                    marketInserted = true;
+                }
                 const rows = byCat[cat] || [];
                 if (!rows.length) return;
                 const sum = rows
@@ -710,7 +1209,7 @@
                 const earnedCat = rows.reduce(function (s, a) {
                     return s + earnedForAsset(a, incomeByAsset);
                 }, 0);
-                const baseForPct = cat === 'cash' ? totalUsd : investedUsd;
+                const baseForPct = cat === 'cash' ? savingsUsd : portfolioUsd;
                 const pct = baseForPct > 0 ? (sum / baseForPct) * 100 : 0;
                 let cards = '';
                 rows.forEach(function (a) {
@@ -812,13 +1311,19 @@
                     '<span class="sub">$' + fmt(sum) + ' · ' + fmt(pct, 1) + '%' + earnedSub + '</span></div>' +
                     '<div class="card-grid">' + cards + '</div></div>';
             });
+            if (!marketInserted) sectionsHtml += renderMarketHtml(fig, portfolioUsd);
             document.getElementById('sections').innerHTML = sectionsHtml;
 
+            const posCount = active.length + Object.keys(fig.portfolio).length + (market.btcAmount > 0 ? 1 : 0);
             document.getElementById('summaryBlock').innerHTML =
                 '<div><span class="label">Активных позиций</span></div>' +
-                '<div><span class="value">' + active.length + '</span></div>' +
-                '<div><span class="label">Всего выплат</span></div>' +
-                '<div><span class="value">+$' + fmt(incomeUsd) + '</span></div>' +
+                '<div><span class="value">' + posCount + '</span></div>' +
+                '<div><span class="label">Выплаты (купоны+див.)</span></div>' +
+                '<div><span class="value">+$' + fmt(payoutsAll) + '</span></div>' +
+                '<div><span class="label">Итого с ростом акций</span></div>' +
+                '<div><span class="value">' + earnSign + '$' + fmt(Math.abs(earnedAll)) + '</span></div>' +
+                '<div><span class="label">USD/RUB</span></div>' +
+                '<div><span class="value">' + fmt(fig.rate, 2) + (market.usdRubLive ? ' · ЦБ' : ' · запас') + '</span></div>' +
                 '<div><span class="label">USD/BYN (' +
                 (window.__fxSource === 'nbrb' ? 'НБРБ' : window.__fxSource === 'er-api' ? 'er-api' : 'запас') +
                 ')</span></div>' +
@@ -826,41 +1331,86 @@
                 '<div><span class="label">Старт инвестиций</span></div>' +
                 '<div><span class="value">' + escapeHtml(startStr) + '</span></div>';
 
-            const sortedIncome = income.slice().sort(function (a, b) {
+            const displayIncome = income.map(function (row) {
+                return {
+                    asset: row.asset,
+                    date: row.date,
+                    amount: row.amount,
+                    currency: row.currency,
+                    amount_byn: row.amount_byn,
+                    note: row.note,
+                    kind: 'pay'
+                };
+            });
+            (market.dividends || []).forEach(function (d) {
+                displayIncome.push({
+                    asset: (d.name || d.ticker || 'Дивиденд') + (d.ticker ? ' (' + d.ticker + ')' : ''),
+                    date: d.date,
+                    amount: d.amountUSD,
+                    currency: 'USD',
+                    amount_byn: 0,
+                    note: '',
+                    kind: 'div'
+                });
+            });
+            displayIncome.sort(function (a, b) {
                 const da = parseRuDate(a.date); const db = parseRuDate(b.date);
                 return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
             });
             let incHtml = '';
             let payCount = 0;
-            sortedIncome.forEach(function (row) {
+            displayIncome.forEach(function (row) {
                 const amt = Number(row.amount) || 0;
                 if (!amt && !row.note) return;
                 payCount += 1;
                 const byn = Number(row.amount_byn) || 0;
                 const extra = byn > 0 ? ' · ' + fmt(byn) + ' BYN' : '';
                 const note = row.note ? ' · ' + escapeHtml(row.note) : '';
+                const badge = row.kind === 'div'
+                    ? '<span class="badge-div">Дивиденд</span> '
+                    : '<span class="badge-inc">Выплата</span> ';
                 incHtml +=
                     '<div class="history-item">' +
-                    '<span><span class="badge-inc">Выплата</span> ' + escapeHtml(row.asset || '') +
+                    '<span>' + badge + escapeHtml(row.asset || '') +
                     ' — ' + fmt(amt) + ' ' + escapeHtml(row.currency || 'USD') + extra + note + '</span>' +
                     '<span class="date">' + escapeHtml(row.date || '') + '</span></div>';
             });
             document.getElementById('incomeList').innerHTML = incHtml || '<div class="history-item">Пока нет выплат</div>';
+
+            const tradesSorted = (market.trades || []).slice().sort(function (a, b) {
+                const da = parseRuDate(a.date); const db = parseRuDate(b.date);
+                return (da ? da.getTime() : 0) - (db ? db.getTime() : 0);
+            });
+            let tradeHtml = '';
+            tradesSorted.forEach(function (t) {
+                const name = STOCK_NAMES[t.ticker] || t.ticker;
+                tradeHtml +=
+                    '<div class="history-item">' +
+                    '<span><span class="badge-buy">Покупка</span> ' + escapeHtml(name) + ' (' + escapeHtml(t.ticker) + ')' +
+                    ' — ' + fmt(t.shares, Number(t.shares) % 1 ? 2 : 0) + ' шт. по ' + fmt(t.price) + ' ₽</span>' +
+                    '<span class="date">' + escapeHtml(t.date || '') + '</span></div>';
+            });
+            document.getElementById('tradeList').innerHTML = tradeHtml || '<div class="history-item">Сделок нет</div>';
+            const tradeCountEl = document.getElementById('tradeHistoryCount');
+            if (tradeCountEl) tradeCountEl.textContent = tradesSorted.length ? '(' + tradesSorted.length + ')' : '';
             const countEl = document.getElementById('incomeHistoryCount');
             if (countEl) {
                 countEl.textContent = payCount ? '(' + payCount + ')' : '';
             }
         }
 
-        (function setupIncomeAccordion() {
-            const box = document.getElementById('incomeHistory');
-            const btn = document.getElementById('incomeHistoryToggle');
-            if (!box || !btn) return;
+        function setupAccordion(boxId, btnId) {
+            const box = document.getElementById(boxId);
+            const btn = document.getElementById(btnId);
+            if (!box || !btn || btn.dataset.bound) return;
+            btn.dataset.bound = '1';
             btn.addEventListener('click', function () {
                 const open = box.classList.toggle('open');
                 btn.setAttribute('aria-expanded', open ? 'true' : 'false');
             });
-        })();
+        }
+        setupAccordion('incomeHistory', 'incomeHistoryToggle');
+        setupAccordion('tradeHistory', 'tradeHistoryToggle');
 
         async function trySeedSheets(assets, income, meta) {
             try {
@@ -876,12 +1426,32 @@
             }
         }
 
+        async function paint(refreshFx) {
+            if (!view || paintLock) return;
+            paintLock = true;
+            try {
+                if (refreshFx) {
+                    const fx = await Promise.all([fetchUsdByn(), fetchGoldQuote()]);
+                    view.usdByn = fx[0];
+                    view.goldQuote = fx[1];
+                }
+                await refreshQuotes();
+                render(view.assets, view.income, view.meta, view.usdByn, view.goldQuote);
+                updateTimer();
+            } finally {
+                paintLock = false;
+            }
+        }
+
         async function load() {
             const loading = document.getElementById('loadingMessage');
             const content = document.getElementById('content');
             const err = document.getElementById('errorMessage');
             const sync = document.getElementById('syncStatus');
-            const [usdByn, goldQuote] = await Promise.all([fetchUsdByn(), fetchGoldQuote()]);
+            const marketPromise = loadMarketSheets();
+            const fx = await Promise.all([fetchUsdByn(), fetchGoldQuote()]);
+            const usdByn = fx[0];
+            let goldQuote = fx[1];
             let assets = null;
             let income = null;
             let meta = null;
@@ -899,14 +1469,13 @@
             } catch (e) {
                 console.warn(e);
             }
+            await marketPromise;
 
             if (!assets || !assets.length) {
                 assets = SEED_ASSETS;
                 income = income && income.length ? income : SEED_INCOME;
                 meta = meta && meta.length ? meta : SEED_META;
                 const seeded = await trySeedSheets(assets, income, meta);
-                loading.style.display = 'none';
-                content.style.display = 'block';
                 if (seeded) {
                     sync.textContent = '☁️ Сид записан в Google Sheets';
                     sync.style.color = '#166534';
@@ -916,41 +1485,46 @@
                     err.style.display = 'block';
                     err.textContent = '⚠️ Вставь обновлённый apps-script/Code.gs в Google Apps Script → Deploy → Manage deployments → Edit → New version. Листы InvestAssets / InvestIncome / InvestMeta создадутся сами.';
                 }
-                render(assets, income, meta, usdByn, goldQuote);
-                return;
-            }
+            } else {
+                income = income || [];
+                meta = meta || SEED_META;
 
-            income = income || [];
-            meta = meta || SEED_META;
+                const cashFix = ensureCashReserve(assets);
+                assets = cashFix.assets;
+                const vgdoFix = ensureVgdoPair(assets, income);
+                assets = vgdoFix.assets;
+                income = vgdoFix.income;
 
-            const cashFix = ensureCashReserve(assets);
-            assets = cashFix.assets;
-            const vgdoFix = ensureVgdoPair(assets, income);
-            assets = vgdoFix.assets;
-            income = vgdoFix.income;
-
-            const needSave = fromSheets && (cashFix.changed || vgdoFix.changed);
-            if (needSave) {
-                try {
-                    await Promise.all([
-                        HelpersAPI.saveSheet('InvestAssets', assets),
-                        HelpersAPI.saveSheet('InvestIncome', income)
-                    ]);
-                    sync.textContent = '☁️ Данные поправлены (НЗ / 2×ВГДО) и сохранены';
-                    sync.style.color = '#166534';
-                } catch (e) {
-                    console.warn(e);
-                    sync.textContent = fromSheets ? '☁️ Данные из Google Sheets' : '📦 Локальные данные';
+                const needSave = fromSheets && (cashFix.changed || vgdoFix.changed);
+                if (needSave) {
+                    try {
+                        await Promise.all([
+                            HelpersAPI.saveSheet('InvestAssets', assets),
+                            HelpersAPI.saveSheet('InvestIncome', income)
+                        ]);
+                        sync.textContent = '☁️ Данные поправлены (НЗ / 2×ВГДО) и сохранены';
+                        sync.style.color = '#166534';
+                    } catch (e) {
+                        console.warn(e);
+                        sync.textContent = '☁️ Данные из Google Sheets';
+                        sync.style.color = '#166534';
+                    }
+                } else {
+                    sync.textContent = '☁️ Данные из Google Sheets';
                     sync.style.color = '#166534';
                 }
-            } else {
-                sync.textContent = fromSheets ? '☁️ Данные из Google Sheets' : '📦 Локальные данные';
-                sync.style.color = '#166534';
             }
 
+            view = { assets: assets, income: income || [], meta: meta || SEED_META, usdByn: usdByn, goldQuote: goldQuote };
+            try {
+                await paint(false);
+            } catch (e) {
+                console.warn(e);
+                render(view.assets, view.income, view.meta, view.usdByn, view.goldQuote);
+            }
             loading.style.display = 'none';
             content.style.display = 'block';
-            render(assets, income, meta, usdByn, goldQuote);
+            if (!quoteLoop) quoteLoop = setInterval(function () { paint(true); }, 60000);
         }
 
         load();
