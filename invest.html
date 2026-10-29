@@ -53,6 +53,7 @@
             color: #475569; margin: 0; border-left: 4px solid #2563eb;
             padding-left: 16px; font-size: 15px;
         }
+        .asof { font-size: 13px; color: rgba(128, 136, 146, 0.55); margin: 2px 0 0; min-height: 1em; }
         .sync {
             font-size: 13px; color: #64748b; margin: 0;
             text-align: right; white-space: nowrap;
@@ -78,8 +79,14 @@
         .card.withdrawn { opacity: 0.55; }
         .card .ticker { font-weight: 700; font-size: 15px; color: #0f172a; line-height: 1.3; }
         .card .name { font-size: 12px; color: #64748b; margin-top: 2px; word-break: break-word; }
-        .card .price { font-size: 22px; font-weight: 700; margin-top: 10px; color: #0f172a; }
+        .card .price {
+            font-size: 22px; font-weight: 700; margin-top: 10px; color: #0f172a;
+            display: flex; align-items: baseline; flex-wrap: nowrap; gap: 8px;
+        }
         .card .price small { font-size: 13px; font-weight: 400; color: #64748b; margin-left: 4px; }
+        .card .price .avg {
+            margin-left: auto; font-size: 13px; font-weight: 500; color: #94a3b8; white-space: nowrap;
+        }
         .card .metric {
             display: flex; flex-direction: row; align-items: center; flex-wrap: wrap;
             gap: 6px; margin-top: 6px;
@@ -162,6 +169,23 @@
             display: none; padding: 0 20px 16px; border-top: 1px solid #f1f5f9;
         }
         .history.open .history-body { display: block; }
+        .capital-bar {
+            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
+            gap: 10px 16px; padding-top: 14px;
+        }
+        .capital-ranges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .range-btn {
+            border: 1px solid #e2e8f0; background: #f8fafc; color: #1e293b;
+            border-radius: 40px; padding: 6px 14px; font: inherit; font-size: 13px; font-weight: 600;
+            cursor: pointer;
+        }
+        .range-btn.on { background: #2563eb; color: white; border-color: #2563eb; }
+        .capital-delta { font-size: 14px; font-weight: 600; color: #64748b; }
+        .capital-delta.positive { color: #166534; }
+        .capital-delta.negative { color: #991b1b; }
+        .capital-chart { width: 100%; margin-top: 8px; }
+        .capital-chart svg { width: 100%; height: auto; display: block; }
+        .capital-note { font-size: 12px; color: #94a3b8; margin-top: 8px; line-height: 1.45; }
         .history-item {
             font-size: 14px; color: #1e293b; padding: 7px 0; border-bottom: 1px solid #f1f5f9;
             display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;
@@ -219,7 +243,16 @@
         }
         .badge-buy { color: #2563eb; font-weight: 500; }
         .badge-div { color: #166534; font-weight: 500; }
-        .loading { text-align: center; padding: 30px; color: #64748b; background: white; border-radius: 20px; border: 1px solid #e9edf4; }
+        .loading {
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            text-align: center; padding: 30px; color: #64748b; background: white; border-radius: 20px; border: 1px solid #e9edf4;
+        }
+        .loading .spinner-circle {
+            width: 22px; height: 22px; flex-shrink: 0;
+            border: 3px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%;
+            animation: load-spin 0.7s linear infinite;
+        }
+        @keyframes load-spin { to { transform: rotate(360deg); } }
         .error { color: #991b1b; background: #fee2e2; padding: 14px 18px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #fecaca; }
         .footer { margin-top: 12px; font-size: 13px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
         .auth-overlay {
@@ -272,9 +305,10 @@
                 <div class="sync" id="syncStatus">⏳ Загрузка из Google Sheets…</div>
             </div>
             <div class="subhead">Акции MOEX · BTC · облигации · токены · вклады · золото · НЗ</div>
+            <div class="asof" id="capitalAsOf"></div>
         </div>
         <div id="errorMessage" class="error" style="display:none;"></div>
-        <div id="loadingMessage" class="loading">⏳ Загрузка портфеля и котировок…</div>
+        <div id="loadingMessage" class="loading"><span class="spinner-circle" aria-hidden="true"></span><span>Загрузка портфеля и котировок…</span></div>
 
         <div id="content" style="display:none;">
             <div class="result-block">
@@ -306,6 +340,25 @@
             <div class="summary-block" id="summaryBlock"></div>
 
             <div id="sections"></div>
+
+            <div class="history" id="capitalHistory">
+                <button type="button" class="history-toggle" id="capitalHistoryToggle" aria-expanded="false">
+                    <h3>📈 Рост капитала <span class="count" id="capitalCount"></span></h3>
+                    <span class="history-chevron" aria-hidden="true">▼</span>
+                </button>
+                <div class="history-body">
+                    <div class="capital-bar">
+                        <div class="capital-ranges" id="capitalRanges">
+                            <button type="button" class="range-btn" data-range="7">Неделя</button>
+                            <button type="button" class="range-btn on" data-range="30">Месяц</button>
+                            <button type="button" class="range-btn" data-range="365">Год</button>
+                        </div>
+                        <div class="capital-delta" id="capitalDelta">—</div>
+                    </div>
+                    <div class="capital-chart" id="capitalChart"></div>
+                    <div class="capital-note" id="capitalNote"></div>
+                </div>
+            </div>
 
             <div class="history" id="incomeHistory">
                 <button type="button" class="history-toggle" id="incomeHistoryToggle" aria-expanded="false">
@@ -980,11 +1033,14 @@
                 const dayPos = change >= 0;
                 const div = fig.divByTicker[ticker] || 0;
                 const shareLabel = fmt(pos.shares, pos.shares % 1 ? 2 : 0);
+                const avgRub = pos.shares > 0 ? pos.cost / pos.shares : 0;
                 cards +=
                     '<div class="card">' +
                     '<div class="ticker">' + escapeHtml(ticker) + '</div>' +
                     '<div class="name">' + escapeHtml(name) + ' · ' + shareLabel + ' шт.</div>' +
-                    '<div class="price">' + (known ? fmt(price) : '—') + ' <small>₽</small></div>' +
+                    '<div class="price">' + (known ? fmt(price) : '—') + ' <small>₽</small>' +
+                    (avgRub > 0 ? '<span class="avg">ср. ' + fmt(avgRub) + ' ₽</span>' : '') +
+                    '</div>' +
                     '<div class="local">$' + fmt(currentRub / fig.rate) + '</div>' +
                     '<div class="metric"><span class="metric-label">Сегодня:</span>' +
                     '<span class="change ' + (known ? (dayPos ? 'positive' : 'negative') : '') + '">' +
@@ -1084,7 +1140,40 @@
             );
         }
 
+        function latestCapitalStamp(assets, income) {
+            let best = null;
+            const endToday = new Date();
+            endToday.setHours(23, 59, 59, 999);
+            function consider(raw) {
+                const dt = parseRuDate(raw);
+                if (!dt || isNaN(dt.getTime()) || dt > endToday) return;
+                if (!best || dt > best) best = dt;
+            }
+            function considerText(text) {
+                const re = /(\d{1,2}\.\d{1,2}\.\d{4})/g;
+                const s = String(text || '');
+                let m;
+                while ((m = re.exec(s))) consider(m[1]);
+            }
+            (income || []).forEach(function (row) {
+                consider(row.date);
+                considerText(row.note);
+            });
+            (market.trades || []).forEach(function (t) { consider(t.date); });
+            (market.dividends || []).forEach(function (d) { consider(d.date); });
+            (assets || []).forEach(function (a) { considerText(a.note); });
+            if (!best) return '';
+            const dd = String(best.getDate()).padStart(2, '0');
+            const mm = String(best.getMonth() + 1).padStart(2, '0');
+            return dd + '.' + mm + '.' + best.getFullYear();
+        }
+
         function render(assets, income, meta, usdByn, goldQuote) {
+            const asOfEl = document.getElementById('capitalAsOf');
+            if (asOfEl) {
+                const stamp = latestCapitalStamp(assets, income);
+                asOfEl.textContent = stamp ? 'выплаты на ' + stamp : '';
+            }
             const startStr = (meta.find(function (m) { return m.key === 'start_date'; }) || {}).value || '14.10.2025';
             const start = parseRuDate(startStr) || new Date(2025, 9, 14);
             const daysPassed = Math.max(1, Math.floor((Date.now() - start.getTime()) / 86400000));
@@ -1144,6 +1233,7 @@
             const unrealizedExtra = goldPnl + fig.btcPnl;
             const apr = totalCost > 0 ? ((earnedAll + unrealizedExtra) / totalCost) * (365 / daysPassed) * 100 : 0;
             const portfolioUsd = investedUsd + fig.stocksCurrentUsd + fig.btcCurrent;
+            lastPortfolioUsd = portfolioUsd;
             const savingsUsd = portfolioUsd + cashUsd;
 
             const incomeTotalEl = document.getElementById('incomeTotal');
@@ -1399,6 +1489,208 @@
             }
         }
 
+        let capitalRows = [];
+        let capitalRange = 30;
+        let capitalChecked = false;
+        let capitalNote = 'Точка за день пишется один раз, при первом открытии. НЗ не входит.';
+        let lastPortfolioUsd = null;
+
+        function todayStamp() {
+            const d = new Date();
+            const dd = String(d.getDate()).padStart(2, '0');
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            return dd + '.' + mm + '.' + d.getFullYear();
+        }
+
+        function normDate(value) {
+            const s = String(value || '').trim();
+            const ru = s.match(/^(\d{1,2})[.](\d{1,2})[.](\d{4})/);
+            if (ru) {
+                return String(ru[1]).padStart(2, '0') + '.' + String(ru[2]).padStart(2, '0') + '.' + ru[3];
+            }
+            const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+            if (iso) return iso[3] + '.' + iso[2] + '.' + iso[1];
+            return '';
+        }
+
+        function capitalPoints(days) {
+            const today = new Date();
+            today.setHours(23, 59, 59, 999);
+            const from = new Date();
+            from.setHours(0, 0, 0, 0);
+            from.setDate(from.getDate() - (days - 1));
+            const seen = {};
+            const points = [];
+            capitalRows.forEach(function (row) {
+                const date = normDate(row.date);
+                const value = Number(row.value_usd);
+                const t = parseRuDate(date);
+                if (!date || !t || !Number.isFinite(value)) return;
+                if (t < from || t > today) return;
+                if (seen[date]) return;
+                seen[date] = true;
+                points.push({ date: date, value: value, t: t });
+            });
+            points.sort(function (a, b) { return a.t - b.t; });
+            return points;
+        }
+
+        function drawCapitalChart() {
+            const host = document.getElementById('capitalChart');
+            const deltaEl = document.getElementById('capitalDelta');
+            const noteEl = document.getElementById('capitalNote');
+            const countEl = document.getElementById('capitalCount');
+            if (!host) return;
+            if (countEl) countEl.textContent = capitalRows.length ? '(' + capitalRows.length + ')' : '';
+            if (noteEl) noteEl.textContent = capitalNote;
+
+            const points = capitalPoints(capitalRange);
+            if (!points.length) {
+                host.innerHTML = '<svg viewBox="0 0 640 180" role="img" aria-label="График капитала"><text x="320" y="90" text-anchor="middle" fill="#94a3b8" font-size="14">Пока нет точек за выбранный период</text></svg>';
+                if (deltaEl) {
+                    deltaEl.textContent = '—';
+                    deltaEl.className = 'capital-delta';
+                }
+                return;
+            }
+
+            const first = points[0].value;
+            const last = points[points.length - 1].value;
+            const diff = last - first;
+            const pct = first > 0 ? (diff / first) * 100 : 0;
+            if (deltaEl) {
+                if (points.length < 2) {
+                    deltaEl.textContent = '$' + fmt(last);
+                    deltaEl.className = 'capital-delta';
+                } else {
+                    const sign = diff >= 0 ? '+' : '−';
+                    deltaEl.textContent = sign + '$' + fmt(Math.abs(diff)) + ' (' + sign + fmt(Math.abs(pct)) + '%)';
+                    deltaEl.className = 'capital-delta ' + (diff >= 0 ? 'positive' : 'negative');
+                }
+            }
+
+            const w = 640;
+            const h = 220;
+            const padL = 64;
+            const padR = 16;
+            const padT = 16;
+            const padB = 32;
+            let min = points[0].value;
+            let max = points[0].value;
+            points.forEach(function (p) {
+                if (p.value < min) min = p.value;
+                if (p.value > max) max = p.value;
+            });
+            if (max - min < 1) {
+                min -= 1;
+                max += 1;
+            } else {
+                const pad = (max - min) * 0.12;
+                min -= pad;
+                max += pad;
+            }
+            const plotW = w - padL - padR;
+            const plotH = h - padT - padB;
+            function xAt(i) {
+                if (points.length === 1) return padL + plotW / 2;
+                return padL + (plotW * i) / (points.length - 1);
+            }
+            function yAt(v) {
+                return padT + plotH - ((v - min) / (max - min)) * plotH;
+            }
+
+            let line = '';
+            let area = '';
+            points.forEach(function (p, i) {
+                const x = xAt(i);
+                const y = yAt(p.value);
+                line += (i ? ' L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+                area += (i ? ' L' : 'M') + x.toFixed(1) + ' ' + y.toFixed(1);
+            });
+            const baseY = (padT + plotH).toFixed(1);
+            area += ' L' + xAt(points.length - 1).toFixed(1) + ' ' + baseY + ' L' + xAt(0).toFixed(1) + ' ' + baseY + ' Z';
+
+            let dots = '';
+            points.forEach(function (p, i) {
+                const show = points.length <= 12 || i === 0 || i === points.length - 1;
+                if (!show) return;
+                dots += '<circle cx="' + xAt(i).toFixed(1) + '" cy="' + yAt(p.value).toFixed(1) + '" r="3.5" fill="#2563eb"></circle>';
+            });
+
+            let xLabels = '';
+            const labelIdx = points.length <= 7
+                ? points.map(function (_, i) { return i; })
+                : [0, Math.floor((points.length - 1) / 2), points.length - 1];
+            const used = {};
+            labelIdx.forEach(function (i) {
+                if (used[i]) return;
+                used[i] = true;
+                const anchor = i === 0 ? 'start' : (i === points.length - 1 ? 'end' : 'middle');
+                xLabels += '<text x="' + xAt(i).toFixed(1) + '" y="' + (h - 8) + '" text-anchor="' + anchor + '" fill="#94a3b8" font-size="11">' + points[i].date.slice(0, 5) + '</text>';
+            });
+
+            host.innerHTML =
+                '<svg viewBox="0 0 ' + w + ' ' + h + '" role="img" aria-label="Рост капитала без НЗ">' +
+                '<line x1="' + padL + '" y1="' + padT + '" x2="' + padL + '" y2="' + (padT + plotH) + '" stroke="#e2e8f0"></line>' +
+                '<line x1="' + padL + '" y1="' + (padT + plotH) + '" x2="' + (w - padR) + '" y2="' + (padT + plotH) + '" stroke="#e2e8f0"></line>' +
+                '<text x="' + (padL - 8) + '" y="' + (padT + 4) + '" text-anchor="end" fill="#94a3b8" font-size="11">$' + fmt(max, 0) + '</text>' +
+                '<text x="' + (padL - 8) + '" y="' + (padT + plotH) + '" text-anchor="end" fill="#94a3b8" font-size="11">$' + fmt(min, 0) + '</text>' +
+                '<path d="' + area + '" fill="#dbeafe"></path>' +
+                '<path d="' + line + '" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"></path>' +
+                dots + xLabels +
+                '</svg>';
+        }
+
+        async function loadCapitalRows() {
+            try {
+                const rows = await HelpersAPI.loadSheet('InvestValue');
+                capitalRows = (rows || []).map(function (row) {
+                    return { date: normDate(row.date), value_usd: Number(row.value_usd) };
+                }).filter(function (row) {
+                    return row.date && Number.isFinite(row.value_usd);
+                });
+            } catch (e) {
+                capitalRows = [];
+                if (String(e && e.message) === 'unknown_sheet') {
+                    capitalNote = 'Лист InvestValue ещё не в скрипте. Вставь apps-script/Code.gs и сделай Deploy → Manage deployments → Edit → New version (URL не меняй). Точка за сегодня на графике есть, в таблицу уйдёт после этого.';
+                } else {
+                    capitalNote = 'Не удалось прочитать историю капитала.';
+                }
+                console.warn('InvestValue', e);
+            }
+        }
+
+        async function recordCapitalOnce() {
+            if (capitalChecked) return;
+            if (!market.quotesReady || !Number.isFinite(lastPortfolioUsd) || lastPortfolioUsd <= 0) return;
+            capitalChecked = true;
+            const today = todayStamp();
+            const has = capitalRows.some(function (row) { return normDate(row.date) === today; });
+            if (has) {
+                capitalNote = 'За ' + today + ' запись уже есть — не перезаписываю. НЗ в сумму не входит.';
+                drawCapitalChart();
+                return;
+            }
+            capitalRows.push({
+                date: today,
+                value_usd: Math.round(lastPortfolioUsd * 100) / 100
+            });
+            try {
+                await HelpersAPI.saveSheet('InvestValue', capitalRows.map(function (row) {
+                    return { date: row.date, value_usd: row.value_usd };
+                }));
+                capitalNote = 'За ' + today + ' записано $' + fmt(lastPortfolioUsd) + '. Повторно за сегодня не перезаписываем. НЗ не входит.';
+            } catch (e) {
+                console.warn('InvestValue save', e);
+                if (String(e && e.message) === 'unknown_sheet') {
+                    capitalNote = 'Лист InvestValue ещё не в скрипте. Вставь apps-script/Code.gs и сделай Deploy → Manage deployments → Edit → New version (URL не меняй). Точка видна сейчас, в таблицу не ушла.';
+                } else {
+                    capitalNote = 'Не удалось записать точку за сегодня.';
+                }
+            }
+            drawCapitalChart();
+        }
+
         function setupAccordion(boxId, btnId) {
             const box = document.getElementById(boxId);
             const btn = document.getElementById(btnId);
@@ -1409,8 +1701,21 @@
                 btn.setAttribute('aria-expanded', open ? 'true' : 'false');
             });
         }
+        setupAccordion('capitalHistory', 'capitalHistoryToggle');
         setupAccordion('incomeHistory', 'incomeHistoryToggle');
         setupAccordion('tradeHistory', 'tradeHistoryToggle');
+        (function bindCapitalRanges() {
+            const box = document.getElementById('capitalRanges');
+            if (!box) return;
+            box.addEventListener('click', function (e) {
+                const btn = e.target.closest ? e.target.closest('.range-btn') : null;
+                if (!btn) return;
+                capitalRange = Number(btn.getAttribute('data-range')) || 30;
+                const all = box.querySelectorAll('.range-btn');
+                for (let i = 0; i < all.length; i++) all[i].classList.toggle('on', all[i] === btn);
+                drawCapitalChart();
+            });
+        })();
 
         async function trySeedSheets(assets, income, meta) {
             try {
@@ -1449,6 +1754,7 @@
             const err = document.getElementById('errorMessage');
             const sync = document.getElementById('syncStatus');
             const marketPromise = loadMarketSheets();
+            const capitalPromise = loadCapitalRows();
             const fx = await Promise.all([fetchUsdByn(), fetchGoldQuote()]);
             const usdByn = fx[0];
             let goldQuote = fx[1];
@@ -1469,7 +1775,7 @@
             } catch (e) {
                 console.warn(e);
             }
-            await marketPromise;
+            await Promise.all([marketPromise, capitalPromise]);
 
             if (!assets || !assets.length) {
                 assets = SEED_ASSETS;
@@ -1522,6 +1828,12 @@
                 console.warn(e);
                 render(view.assets, view.income, view.meta, view.usdByn, view.goldQuote);
             }
+            try {
+                await recordCapitalOnce();
+            } catch (e) {
+                console.warn(e);
+            }
+            drawCapitalChart();
             loading.style.display = 'none';
             content.style.display = 'block';
             if (!quoteLoop) quoteLoop = setInterval(function () { paint(true); }, 60000);

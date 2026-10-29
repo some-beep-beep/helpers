@@ -25,7 +25,9 @@ const ALLOWED_SHEETS = {
     'currency', 'count', 'rate_pct', 'maturity', 'status', 'note'
   ],
   InvestIncome: ['asset', 'date', 'amount', 'currency', 'amount_byn', 'note'],
-  InvestMeta: ['key', 'value']
+  InvestMeta: ['key', 'value'],
+  // Одна строка в день: стоимость Invest без НЗ. Повтор за ту же дату клиент не пишет.
+  InvestValue: ['date', 'value_usd']
 };
 
 function doGet(e) {
@@ -188,6 +190,10 @@ function writeSheet_(sheetName, rows) {
     sh.getRange(2, 1, numDataRows, lastCol).clearContent();
   }
   sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  // Дата текстом, иначе Sheets превратит 29.10.2026 в дату и при чтении формат поплывёт.
+  if (sheetName === 'InvestValue') {
+    sh.getRange(1, 1, Math.max(rows.length + 1, 2), 1).setNumberFormat('@');
+  }
 
   if (!rows.length) return;
 
@@ -214,7 +220,8 @@ function coerce_(sheetName, header, value) {
     InvestAssets: {
       amount_usd: true, amount_local: true, count: true, rate_pct: true
     },
-    InvestIncome: { amount: true, amount_byn: true }
+    InvestIncome: { amount: true, amount_byn: true },
+    InvestValue: { value_usd: true }
   };
 
   if (numericHeaders[sheetName] && numericHeaders[sheetName][header]) {

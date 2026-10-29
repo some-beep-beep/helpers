@@ -48,6 +48,10 @@ GitHub Pages: https://some-beep-beep.github.io/helpers/
 
 `key, value` → `start_date` = `14.10.2025`
 
+### InvestValue
+
+`date, value_usd` — одна строка в день, стоимость **Всего Invest** без НЗ. Клиент не перезаписывает дату, которая уже есть.
+
 Старые листы без изменений: Portfolio, BTC, Dividends, Budget, BudgetSettings, Plan.
 
 ## Поведение Invest (важно)
@@ -63,6 +67,8 @@ GitHub Pages: https://some-beep-beep.github.io/helpers/
 - История выплат (купоны + дивиденды) и история сделок — аккордеоны, свёрнуты.
 - Курсы BYN: НБРБ с таймаутом → fallback `open.er-api.com` (VPN).
 - При загрузке миграции: `ensureCashReserve`, `ensureVgdoPair` → save в Sheets. Листы Portfolio / BTC / Dividends только читаются.
+- **Рост капитала** — аккордеон над историей выплат, свёрнут. Раз в локальный день пишет в лист `InvestValue` (`date`, `value_usd`) сумму **Всего Invest** (без НЗ). Если строка за сегодня уже есть — не перезаписывает. График: неделя / месяц / год.
+- Лист `InvestValue` заработает только после вставки `Code.gs` и **Deploy → Manage deployments → Edit → New version** (URL не менять).
 
 ### ВГДО
 
