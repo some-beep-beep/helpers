@@ -12,6 +12,9 @@
 
 const API_TOKEN = 'h7Kp9mQ2xR4vL8nB3wY6tA1cE5uJ0sZ';
 
+/** Таблица с листом ITOGO (GOOGLEFINANCE в шапке). */
+const ITOGO_SPREADSHEET_ID = '1eGVr8mF5SCemBEC8jxdFZyG-8eEq6QigdLILv3SnfBs';
+
 const ALLOWED_SHEETS = {
   Portfolio: ['ticker', 'shares', 'price', 'date'],
   BTC: ['amount', 'cost_usd'],
@@ -37,7 +40,14 @@ function doGet(e) {
 
     const sheetName = String((e.parameter && e.parameter.sheet) || '').trim();
     if (!sheetName) {
-      return json_(200, { ok: true, sheets: Object.keys(ALLOWED_SHEETS) });
+      return json_(200, {
+        ok: true,
+        sheets: Object.keys(ALLOWED_SHEETS).concat(['ITOGO'])
+      });
+    }
+    // Курсы из шапки листа ITOGO (GOOGLEFINANCE / GLD / IMOEX) — только чтение.
+    if (sheetName === 'ITOGO') {
+      return json_(200, { ok: true, sheet: 'ITOGO', quotes: readItogoQuotes_() });
     }
     if (!ALLOWED_SHEETS[sheetName]) {
       return json_(400, { ok: false, error: 'unknown_sheet', sheet: sheetName });
@@ -60,6 +70,10 @@ function doPost(e) {
 
     const body = parseBody_(e);
     const sheetName = String(body.sheet || (e.parameter && e.parameter.sheet) || '').trim();
+    // ITOGO содержит формулы — запись через API запрещена.
+    if (sheetName === 'ITOGO') {
+      return json_(400, { ok: false, error: 'itogo_read_only' });
+    }
     if (!ALLOWED_SHEETS[sheetName]) {
       return json_(400, { ok: false, error: 'unknown_sheet', sheet: sheetName });
     }
@@ -132,6 +146,96 @@ function parseBody_(e) {
     // Also accept form-encoded fallbacks if ever needed.
     return {};
   }
+}
+
+/**
+ * Шапка ITOGO (строка 1): пары подпись|значение
+ * BTC | $… | USD / BYN | … | RUR / USD | … | MOEX | … | GOLD | $…/г
+ */
+function findItogoSheet_(ss) {
+  var names = ['ITOGO', 'Itogo', 'itogo', 'ИТОГО', 'Итого'];
+  for (var i = 0; i < names.length; i++) {
+    var sh = ss.getSheetByName(names[i]);
+    if (sh) return sh;
+  }
+  // Fallback: tab name contains ITOGO / ИТОГ (без учёта регистра)
+  var all = ss.getSheets();
+  for (var j = 0; j < all.length; j++) {
+    var n = String(all[j].getName() || '');
+    var u = n.toUpperCase();
+    if (u.indexOf('ITOGO') !== -1 || n.indexOf('ИТОГ') !== -1) return all[j];
+  }
+  return null;
+}
+
+function sheetNames_(ss) {
+  return ss.getSheets().map(function (s) { return s.getName(); });
+}
+
+function readItogoQuotes_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sh = findItogoSheet_(ss);
+  var tried = 'active:' + sheetNames_(ss).join('|');
+
+  // Лист ITOGO может быть в основной таблице портфеля (другой файл / тот же ID).
+  if (!sh && ITOGO_SPREADSHEET_ID) {
+    try {
+      ss = SpreadsheetApp.openById(ITOGO_SPREADSHEET_ID);
+      sh = findItogoSheet_(ss);
+      tried += '; openById:' + sheetNames_(ss).join('|');
+    } catch (e) {
+      tried += '; openById_fail:' + String(e && e.message ? e.message : e);
+    }
+  }
+
+  if (!sh) {
+    throw new Error('missing_sheet:ITOGO; ' + tried);
+  }
+
+  const lastCol = Math.max(sh.getLastColumn(), 12);
+  const labels = sh.getRange(1, 1, 1, lastCol).getDisplayValues()[0];
+  const values = sh.getRange(1, 1, 1, lastCol).getValues()[0];
+
+  function normLabel(s) {
+    return String(s || '')
+      .toUpperCase()
+      .replace(/\s+/g, '')
+      .replace(/\//g, '');
+  }
+
+  function asNumber(v) {
+    if (typeof v === 'number' && isFinite(v)) return v;
+    const raw = String(v == null ? '' : v)
+      .replace(/\$/g, '')
+      .replace(/\s/g, '')
+      .replace(',', '.');
+    const n = Number(raw);
+    return isFinite(n) ? n : null;
+  }
+
+  const out = {
+    btc: null,
+    usdByn: null,
+    usdRub: null,
+    imoex: null,
+    goldPerGram: null
+  };
+
+  for (var i = 0; i < labels.length; i++) {
+    const key = normLabel(labels[i]);
+    const num = asNumber(values[i + 1]);
+    if (num == null) continue;
+    if (key === 'BTC') out.btc = num;
+    else if (key === 'USDBYN') out.usdByn = num;
+    else if (key === 'RURUSD' || key === 'USDRUB' || key === 'RUBUSD') out.usdRub = num;
+    else if (key === 'MOEX' || key === 'IMOEX') out.imoex = num;
+    else if (key === 'GOLD' || key === 'GLD') out.goldPerGram = num;
+  }
+
+  if (out.btc == null && out.usdByn == null && out.usdRub == null) {
+    throw new Error('itogo_empty');
+  }
+  return out;
 }
 
 function ensureSheet_(sheetName) {

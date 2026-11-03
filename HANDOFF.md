@@ -1,118 +1,168 @@
 # Handoff: helpers / Invest
 
-Дата: 2026-10-29  
-Репо: `helpers` · ветка `main` · последний коммит: `f9e34cc`  
+Дата: 2026-11-03  
+Репо: `helpers` · ветка `main` · последний **запушенный** коммит: `9c0d3ca`  
+Локально есть **незакоммиченные** правки: `invest.html`, `invest.css` (новый), `api.js`, `apps-script/Code.gs`  
 GitHub Pages: https://some-beep-beep.github.io/helpers/  
 Локально: `python3 -m http.server 8765` → http://127.0.0.1:8765/  
 Пароль страниц: `906090` (cookie `portfolio_auth`)
 
-## Контекст проекта
+Таблица Google:  
+https://docs.google.com/spreadsheets/d/1eGVr8mF5SCemBEC8jxdFZyG-8eEq6QigdLILv3SnfBs/  
+Лист курсов: **ITOGO** (`gid=1022596974`)
 
-Статический сайт личного портфеля (не CoachEye). Данные живут в Google Sheets через Apps Script Web App. Токен API лежит в `api.js` / `apps-script/Code.gs` (осознанно, сайт публичный).
+---
 
-### Страницы
+## Контекст
+
+Статический личный портфель (не CoachEye). Данные — Google Sheets + Apps Script Web App.  
+Токен API в `api.js` / `Code.gs` (сайт публичный — осознанно).
+
+Навбар: Plan · Budget · **Invest**. Отдельной страницы MOEX нет (`index.html` → `invest.html`).
 
 | Файл | Роль |
 |------|------|
-| `index.html` | Редирект на `invest.html` |
-| `invest.html` | Весь портфель: облигации, токены, вклады, золото, акции MOEX, BTC, НЗ |
-| `budget.html` | Бюджет + курсы |
-| `plan.html` | План |
-| `api.js` | Sheets API + `fetchFxRates` (НБРБ → er-api) |
-| `apps-script/Code.gs` | Backend Web App |
+| `invest.html` | Весь портфель + UI + расчёты |
+| `invest.css` | Стили Invest (вынесены 03.11) |
+| `api.js` | Sheets API + FX (`fetchAllFx`, `loadItogoQuotes`) |
+| `apps-script/Code.gs` | Web App backend |
+| `budget.html` / `plan.html` | Бюджет / план |
 | `scripts/seed-invest.py` | Сид Invest-листов |
+| `docs/TELEGRAM-DIGEST.md` | ТЗ утреннего дайджеста (код не сделан) |
 
-Навбар везде: Plan · Budget · **Invest**. Отдельной страницы MOEX нет.
+---
 
-## Google Sheets / Apps Script
+## Deploy Apps Script (критично)
 
-- Deployment уже обновлён (Version 2, 29.10.2026), **URL тот же** — в `api.js`.
-- Не создавать New deployment без нужды: только Edit → New version, иначе сменится URL.
-- Листы Invest автосоздаются через `ensureSheet_`.
+URL Web App **не менять** (лежит в `api.js`).
 
-### InvestAssets
+При правке `Code.gs`:
+1. Вставить файл в Apps Script **этой** таблицы  
+2. **Deploy → Manage deployments → ✏️ Edit → New version → Deploy**  
+3. Не делать New deployment (сменится URL)
 
-Колонки: `id, name, category, ticker, amount_usd, amount_local, currency, count, rate_pct, maturity, status, note`
+**Сейчас в локальном `Code.gs` есть чтение листа `ITOGO`.**  
+Пока New version не задеплоен, `?sheet=ITOGO` → `unknown_sheet`, страница падает на er-api.
 
-- `category`: `bond` | `token` | `deposit` | `gold` | `cash`
-- `status`: `active` | `withdrawn`
-- Золото: `count` = граммы, `amount_usd` = **себестоимость** покупки
-- НЗ: `category=cash`, $5000, «подушка» наличкой
+Проверка в консоли браузера: `[FX] bundle source=ITOGO` (успех) или `ITOGO FAIL` / `er-api` (ещё старый деплой).
 
-### InvestIncome
+---
 
-Колонки: `asset, date, amount, currency, amount_byn, note`  
-`asset` должен совпадать с `InvestAssets.name`.
+## Листы Google Sheets
 
-### InvestMeta
+### Обычные (header + rows) — `ALLOWED_SHEETS`
 
-`key, value` → `start_date` = `14.10.2025`
+| Лист | Назначение |
+|------|------------|
+| `InvestAssets` | Позиции bond/token/deposit/gold/cash |
+| `InvestIncome` | Купоны/выплаты |
+| `InvestMeta` | `start_date` = `14.10.2025` |
+| `InvestValue` | Дневной снимок «Всего Invest» без НЗ |
+| `Portfolio` | Сделки акций MOEX |
+| `BTC` | `amount`, `cost_usd` |
+| `Dividends` | Дивиденды |
+| Budget / BudgetSettings / Plan | Бюджет и план |
 
-### InvestValue
+`InvestAssets`: `category` = `bond|token|deposit|gold|cash`, `status` = `active|withdrawn`.  
+Золото: `count` = граммы, `amount_usd` = **себестоимость**. НЗ = cash $5000.
 
-`date, value_usd` — одна строка в день, стоимость **Всего Invest** без НЗ. Клиент не перезаписывает дату, которая уже есть.
+### ITOGO — особый лист (только чтение)
 
-Старые листы без изменений: Portfolio, BTC, Dividends, Budget, BudgetSettings, Plan.
+Строка 1, пары подпись → значение (GOOGLEFINANCE / скрипт IMOEX / GLD→$/г):
 
-## Поведение Invest (важно)
+| Подпись | Пример | Поле API |
+|---------|--------|----------|
+| BTC | $77 297 | `btc` |
+| USD / BYN | 2,94 | `usdByn` |
+| RUR / USD | 80,3 | `usdRub` |
+| MOEX | 2511 | `imoex` |
+| GOLD | $124,47 /г | `goldPerGram` |
 
-Одна страница. Секции: облигации → токены → вклады → золото → акции MOEX → BTC → НЗ.
+Формулы в таблице пользователя:
 
-- **Всего Invest** — текущая стоимость всех позиций **без НЗ**. Облигации/токены/вклады по `amount_usd`, золото и акции и BTC — по живой цене.
-- Купоны и дивиденды в капитал **не** входят. Они в «Заработал».
-- **Все сбережения** = Invest + НЗ. Разбивка: акции / BTC / прочие / НЗ.
-- **Годовых (выплаты + P&L)** = (купоны + дивиденды + нереализованный P&L золота, акций и BTC) / себестоимость без НЗ × 365 / дни. Старт — `InvestMeta.start_date` (14.10.2025).
-- На карточках bond/token/deposit и на SBER/YDEX: строка **Заработал**.
-- Золото: PAXG/Binance → $/г. Акции: MOEX TQBR, USD/RUB — ЦБ. BTC: Binance. Обновление раз в 60 с. Если котировка не пришла — запасная цена, в итоге позиция остаётся по себестоимости.
-- История выплат (купоны + дивиденды) и история сделок — аккордеоны, свёрнуты.
-- Курсы BYN: НБРБ с таймаутом → fallback `open.er-api.com` (VPN).
-- При загрузке миграции: `ensureCashReserve`, `ensureVgdoPair` → save в Sheets. Листы Portfolio / BTC / Dividends только читаются.
-- **Рост капитала** — аккордеон над историей выплат, свёрнут. Раз в локальный день пишет в лист `InvestValue` (`date`, `value_usd`) сумму **Всего Invest** (без НЗ). Если строка за сегодня уже есть — не перезаписывает. График: неделя / месяц / год.
-- Лист `InvestValue` заработает только после вставки `Code.gs` и **Deploy → Manage deployments → Edit → New version** (URL не менять).
+```
+=ROUND(GOOGLEFINANCE("CURRENCY:BTCUSD");2)
+=ROUND(GOOGLEFINANCE("CURRENCY:USDRUB");2)
+=ROUND(GOOGLEFINANCE("CURRENCY:USDBYN");2)
+=GET_IMOEX_CURRENT()
+=ROUND(GOOGLEFINANCE("NYSEARCA:GLD") / 31,1035 / 0,0919; 2)
+```
+
+`GET /?sheet=ITOGO` → `{ ok, quotes: { btc, usdByn, usdRub, imoex, goldPerGram } }`.  
+POST на ITOGO запрещён (`itogo_read_only`) — не затирать формулы.
+
+---
+
+## Курсы на странице (приоритет)
+
+1. **ITOGO** (как в таблице) → BTC, $/₽, $/Br, GOLD $/г, IMOEX в ленте  
+2. **er-api** — запасной пакет + всегда **€/Br** (в ITOGO нет)  
+3. Константы fallback  
+
+Акции **цен** — MOEX ISS TQBR; в USD делятся на `usdRub` из ITOGO/er-api.  
+Обновление котировок ~60 с. Кэш FX в `api.js` ~30 с. Логи: префикс `[FX]`.
+
+---
+
+## Поведение Invest
+
+Секции: облигации → токены → вклады → золото → акции → BTC → НЗ.
+
+- **Всего Invest** — текущая оценка **без НЗ** (bond/token/deposit по `amount_usd`; gold/акции/BTC — mark).  
+- **Заработал** = купоны + дивиденды + P&L золота/акций/BTC (выплаты в капитал не входят).  
+- **Все сбережения** = Invest + НЗ.  
+- **Годовых** = earned / себестоимость без НЗ × 365 / дни с `start_date`.  
+- Ближайшие выплаты (30 дн + расписание) и погашения — баннеры.  
+- **Рост капитала** — `InvestValue`, график неделя/месяц/год.  
+- Миграции при загрузке (могут писать в Sheets): `ensureCashReserve`, `ensureVgdoPair`, `ensureGoldCost`.
+
+### Блок расхождений — удалён
+
+`TABLE_SNAPSHOT` / `#tableDrift` убраны. Вклады BYN и Ювилс (1500 BYN) пересчитываются в USD по текущему $/Br (`revalueBynAssets`, только отображение, Sheets не трогаем).
+
+### Выплаты по месяцам
+
+Аккордеон «📆 Выплаты по месяцам» (купоны + дивиденды, BYN → USD по текущему курсу, только прошедшие даты). Старый блок «История выплат» убран; данные — в `InvestIncome` / `Dividends`. Дивиденд TATN 894,34 RUB ($10,95) — 29.10.2026.
 
 ### ВГДО
 
-Две отдельные облигации, не дубль в таблице доходов:
+Две позиции `#1` / `#2` по ~$1000, выплаты 29.12 и 29.06 по $38.44 на каждую.  
+Купоны сверка: **$876.03** + дивиденды **$12.79** ≈ **$888.82** база «выплат» (P&L сверху плавает).
 
-- `ВГДО 331 (Айгенис) #1` и `#2`
-- По ~$1000 + `amount_local` 2980 BYN
-- По 2 выплаты на каждую (29.12.2025 и 29.06.2026 по $38.44)
+---
 
-### Сверка дохода с исходным файлом пользователя
+## Что сделано недавно (локально, не в git)
 
-| | USD |
-|--|-----|
-| Купоны Invest (с 2×ВГДО) | **876.03** |
-| Дивиденды SBER + Яндекс | +12.79 |
-| Итого в файле пользователя | **888.82** |
+1. FX: единый `fetchAllFx`; приоритет **ITOGO**, иначе er-api (VPN ломал ЦБ/НБРБ).  
+2. Баннер расхождений `TABLE_SNAPSHOT` без записи в Sheets.  
+3. CSS → `invest.css`, cache-bust `?v=20261103b` на css/api.  
+4. `Code.gs`: `readItogoQuotes_`, read-only ITOGO.  
+5. Ранее на `main`: Invest+MOEX+BTC, график капитала, алерты выплат/погашений (`9c0d3ca`).
 
-На Invest «Заработал» = **888.82** (купоны 876.03 + дивиденды 12.79).  
-Если купоны ещё ~$799 — миграция ВГДО не применилась: hard refresh (`Cmd+Shift+R`).
+Pages = то, что запушено; локальные правки ITOGO/drift **ещё не commit/push**.
 
-## Что уже сделано
-
-1. Страница Invest + листы + Code.gs + сид. Commit+push: `f9e34cc` (ещё без объединения с MOEX).
-2. MOEX и BTC влиты в `invest.html`. `index.html` редиректит на Invest. Навбар без MOEX.
-3. Локально проверено 29.10.2026: заработал $888.82, два ВГДО, НЗ $5000 отдельно, итог сбережений = Invest + НЗ.
-4. Эти правки **не закоммичены**. GitHub Pages пока показывает старый сайт.
+---
 
 ## Известные нюансы
 
-1. Если `amount_usd` золота ≈ текущей оценке — P&L около нуля, пока не поправить себестоимость в Sheets.
-2. HELLO — `withdrawn`, выплаты в истории остаются.
-3. Токен API виден в статике.
+1. Немецкий VPN: NBRB/CBR часто abort → не опираться на них.  
+2. Книжные суммы вкладов/Ювилс в Sheets могут отставать от строки ITOGO/Excel.  
+3. Пароль и API token в клиенте — не секрет от тех, кто открыл Pages.  
+4. После правки `api.js` / css — hard refresh (Cmd+Shift+R).
+
+---
 
 ## Возможные следующие задачи
 
-- Закоммитить и запушить объединение, когда пользователь попросит — иначе Pages остаётся старым.
-- Править капитал/выплаты в Sheets.
-- Не трогать URL Web App без необходимости.
-- UI/расчёты по запросу пользователя.
-- Утренний дайджест портфеля в Telegram (личное): см. `docs/TELEGRAM-DIGEST.md` — пока только ТЗ, код не сделан.
+- [ ] Задеплоить New version `Code.gs` (ITOGO).  
+- [ ] Commit + push локальных правок (по просьбе).  
+- [ ] Подтянуть в Sheets актуальные вклады/Ювилс **или** обновлять `TABLE_SNAPSHOT`.  
+- [ ] Telegram-дайджест — `docs/TELEGRAM-DIGEST.md`.  
+- [ ] Аллокация % сверху / цель «до НГ» (предлагалось, не делали).
+
+---
 
 ## Стартовый промпт для нового чата
-
-Скопируй в новый агент-чат:
 
 ```
 Продолжаем helpers (личный портфель, GitHub Pages).
@@ -120,4 +170,9 @@ GitHub Pages: https://some-beep-beep.github.io/helpers/
 Прочитай HANDOFF.md и продолжай с текущего состояния.
 Отвечай по-русски.
 Не коммить/не пушь без явной просьбы.
+
+Важно: курсы с листа ITOGO таблицы
+https://docs.google.com/spreadsheets/d/1eGVr8mF5SCemBEC8jxdFZyG-8eEq6QigdLILv3SnfBs/
+Нужен Deploy → Edit → New version для Code.gs с readItogoQuotes_.
+Локально есть незакоммиченные invest.html / invest.css / api.js / Code.gs.
 ```

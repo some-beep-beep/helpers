@@ -5,330 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <title>Invest — весь портфель</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: #f4f6fa; min-height: 100vh; padding: 0; }
-        .nav-bar {
-            display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between;
-            gap: 12px; background: white; padding: 10px 20px;
-            border-bottom: 1px solid #e9edf4; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-        }
-        .nav-logo {
-            font-weight: 700; font-size: 16px; color: #0f172a;
-            display: flex; align-items: center; gap: 5px; flex: 0 0 auto; white-space: nowrap;
-        }
-        .nav-logo span { color: #2563eb; }
-        .nav-links {
-            display: flex; flex-wrap: nowrap; align-items: center; justify-content: flex-end;
-            gap: 6px; min-width: 0;
-        }
-        .nav-btn {
-            display: inline-flex; align-items: center; gap: 5px;
-            padding: 8px 16px; border-radius: 22px; font-weight: 600; font-size: 14px;
-            color: #1e293b; text-decoration: none; border: 1px solid #e2e8f0; background: #f8fafc;
-            transition: 0.15s ease; white-space: nowrap;
-        }
-        .nav-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
-        .nav-btn.invest {
-            background: #2563eb; color: white; border-color: #2563eb;
-            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
-        }
-        .nav-btn.invest:hover { background: #1d4ed8; border-color: #1d4ed8; }
-        @media (max-width: 520px) {
-            .nav-bar { padding: 8px 12px; gap: 8px; }
-            .nav-btn { padding: 7px 12px; font-size: 13px; }
-            .nav-logo { font-size: 14px; }
-        }
-        .container { max-width: 960px; margin: 0 auto; padding: 24px; }
-        .page-title {
-            display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 20px;
-        }
-        .page-title-row {
-            display: flex; flex-wrap: nowrap; align-items: baseline;
-            justify-content: space-between; gap: 12px;
-            width: 100%; min-width: 0;
-        }
-        h1 { font-size: 26px; margin: 0; font-weight: 600; flex: 0 0 auto; }
-        .asof { font-size: 13px; color: rgba(128, 136, 146, 0.55); margin: 2px 0 0; min-height: 1em; }
-        .tape {
-            display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px;
-            margin: -6px 0 16px; font-size: 13px; line-height: 1.35; color: #0f172a;
-        }
-        .tape .k { color: rgba(128, 136, 146, 0.9); font-weight: 500; margin-right: 4px; }
-        .tape b { font-weight: 600; }
-        .alert-banner {
-            display: none; border-radius: 14px; padding: 12px 16px; margin: 0 0 12px;
-        }
-        .alert-banner.on { display: block; }
-        .alert-banner .alert-title {
-            font-size: 14px; font-weight: 700; margin: 0 0 8px;
-            display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px;
-        }
-        .alert-banner .alert-title .demo {
-            font-size: 11px; font-weight: 600; border-radius: 999px; padding: 2px 8px;
-        }
-        .alert-banner .alert-row,
-        .agenda .agenda-row {
-            display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
-            font-size: 13px; padding: 5px 0;
-        }
-        .alert-banner .alert-row:last-child,
-        .agenda .agenda-row:last-child { border-bottom: none; padding-bottom: 0; }
-        .alert-banner .alert-row .when,
-        .agenda .agenda-row .when { color: #64748b; white-space: nowrap; flex: 0 0 auto; }
-        .alert-banner .alert-row .what,
-        .agenda .agenda-row .what { flex: 1 1 auto; min-width: 0; color: #0f172a; }
-        .alert-banner .alert-row .amt,
-        .agenda .agenda-row .amt { font-weight: 600; white-space: nowrap; color: #0f172a; }
-        .maturity-alert {
-            background: #fff7ed; border: 1px solid #fdba74; color: #9a3412;
-        }
-        .maturity-alert .alert-title { color: #c2410c; }
-        .maturity-alert .alert-title .demo { color: #9a3412; background: #ffedd5; }
-        .maturity-alert .alert-row { border-bottom: 1px solid rgba(154, 52, 18, 0.12); }
-        .payout-alert {
-            background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46;
-        }
-        .payout-alert .alert-title { color: #047857; }
-        .payout-alert .alert-title .demo { color: #065f46; background: #d1fae5; }
-        .payout-alert .alert-row { border-bottom: 1px solid rgba(4, 120, 87, 0.12); }
-        .alert-banner .alert-total {
-            display: flex; justify-content: space-between; align-items: baseline; gap: 12px;
-            margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(4, 120, 87, 0.22);
-            font-size: 13px; font-weight: 700; color: #047857;
-        }
-        .maturity-alert .alert-total {
-            border-top-color: rgba(154, 52, 18, 0.22); color: #c2410c;
-        }
-        .agenda .agenda-row { border-bottom: 1px solid #f1f5f9; }
-        .agenda .agenda-empty { font-size: 13px; color: #94a3b8; }
-        .agenda .kind {
-            font-size: 11px; font-weight: 500; color: #64748b; background: #f1f5f9;
-            border-radius: 999px; padding: 1px 8px; margin-left: 6px; white-space: nowrap;
-        }
-        .sync {
-            font-size: 13px; color: #64748b; margin: 0;
-            text-align: right; white-space: nowrap;
-            overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1 1 auto;
-        }
-        .section {
-            background: white; border-radius: 16px; border: 1px solid #e9edf4;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); padding: 18px 20px 20px; margin-bottom: 20px;
-        }
-        .section-header {
-            display: flex; justify-content: space-between; align-items: baseline;
-            margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; gap: 12px;
-        }
-        .section-header .title { font-size: 18px; font-weight: 700; color: #0f172a; min-width: 0; }
-        .section-header .head-meta {
-            margin-left: auto; display: flex; align-items: baseline; justify-content: flex-end;
-            gap: 12px; flex: 0 0 auto; text-align: right;
-        }
-        .section-header .earned,
-        .section-header .sub { font-size: 13px; color: #94a3b8; white-space: nowrap; }
-        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
-        @media (max-width: 800px) { .card-grid { grid-template-columns: 1fr 1fr; } }
-        @media (max-width: 520px) { .card-grid { grid-template-columns: 1fr; } }
-        .card {
-            background: #f8fafc; padding: 16px 16px 14px; border-radius: 16px;
-            border: 1px solid #eef2f6; display: flex; flex-direction: column;
-        }
-        .card.withdrawn { opacity: 0.55; }
-        .card .ticker { font-weight: 700; font-size: 15px; color: #0f172a; line-height: 1.3; }
-        .card .name { font-size: 12px; color: #64748b; margin-top: 2px; word-break: break-word; }
-        .card .price {
-            font-size: 22px; font-weight: 700; margin-top: 10px; color: #0f172a;
-            display: flex; align-items: baseline; flex-wrap: nowrap; gap: 8px;
-        }
-        .card .price small { font-size: 13px; font-weight: 400; color: #64748b; margin-left: 4px; }
-        .card .price .avg {
-            margin-left: auto; font-size: 13px; font-weight: 500; color: #94a3b8; white-space: nowrap;
-        }
-        .card .metric {
-            display: flex; flex-direction: row; align-items: center; flex-wrap: wrap;
-            gap: 6px; margin-top: 6px;
-        }
-        .card .metric-label { font-size: 11px; font-weight: 500; color: #94a3b8; }
-        .card .pill {
-            display: inline-block; padding: 2px 10px; border-radius: 30px;
-            font-size: 12px; font-weight: 500; background: #eef2f6; color: #1e293b;
-        }
-        .card .pill.rate { background: #dcfce7; color: #166534; }
-        .card .pill.warn { background: #fef3c7; color: #92400e; }
-        .card .pill.muted { background: #f1f5f9; color: #64748b; }
-        .card .change {
-            display: inline-block; padding: 2px 10px; border-radius: 30px;
-            font-size: 12px; font-weight: 500; background: #eef2f6; color: #1e293b;
-        }
-        .card .change.positive { background: #dcfce7; color: #166534; }
-        .card .change.negative { background: #fee2e2; color: #991b1b; }
-        .card .result { font-size: 13px; font-weight: 600; }
-        .card .result.positive { color: #166534; }
-        .card .result.negative { color: #991b1b; }
-        .card .local { font-size: 12px; color: #64748b; margin-top: 4px; }
-        .total-meta .earn { color: #166534; }
-        .total-meta .earn.neg { color: #991b1b; }
-        .result-value {
-            font-size: 22px; font-weight: 700; color: #166534;
-            text-align: right; flex: 0 0 auto; white-space: nowrap;
-        }
-        .result-value.neg { color: #991b1b; }
-        .result-usd {
-            font-size: 13px; color: #166534; line-height: 1.55;
-            text-align: right; width: 100%;
-            display: flex; flex-direction: column; align-items: flex-end; gap: 2px;
-        }
-        .result-usd .line { display: block; }
-        .result-usd .neg { color: #991b1b; }
-        @media (max-width: 640px) {
-            .result-value { text-align: left; }
-            .result-usd { text-align: left; align-items: flex-start; }
-        }
-        .history {
-            background: white; border-radius: 16px; padding: 0; border: 1px solid #e9edf4; margin-bottom: 20px;
-            overflow: hidden;
-        }
-        .history-toggle {
-            width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-            padding: 16px 20px; border: none; background: transparent; cursor: pointer; text-align: left;
-            font: inherit; color: inherit;
-        }
-        .history-toggle:hover { background: #f8fafc; }
-        .history-toggle h3 {
-            font-size: 16px; font-weight: 600; margin: 0; color: #0f172a;
-            display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-        }
-        .history-toggle .count {
-            font-size: 13px; font-weight: 500; color: #94a3b8;
-        }
-        .history-chevron {
-            font-size: 14px; color: #64748b; transition: transform 0.15s ease; flex-shrink: 0;
-        }
-        .history.open .history-chevron { transform: rotate(180deg); }
-        .history-body {
-            display: none; padding: 0 20px 16px; border-top: 1px solid #f1f5f9;
-        }
-        .history.open .history-body { display: block; }
-        .capital-bar {
-            display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center;
-            gap: 10px 16px; padding-top: 14px;
-        }
-        .capital-ranges { display: flex; gap: 8px; flex-wrap: wrap; }
-        .range-btn {
-            border: 1px solid #e2e8f0; background: #f8fafc; color: #1e293b;
-            border-radius: 40px; padding: 6px 14px; font: inherit; font-size: 13px; font-weight: 600;
-            cursor: pointer;
-        }
-        .range-btn.on { background: #2563eb; color: white; border-color: #2563eb; }
-        .capital-delta { font-size: 14px; font-weight: 600; color: #64748b; }
-        .capital-delta.positive { color: #166534; }
-        .capital-delta.negative { color: #991b1b; }
-        .capital-chart { width: 100%; margin-top: 8px; }
-        .capital-chart svg { width: 100%; height: auto; display: block; }
-        .capital-note { font-size: 12px; color: #94a3b8; margin-top: 8px; line-height: 1.45; }
-        .history-item {
-            font-size: 14px; color: #1e293b; padding: 7px 0; border-bottom: 1px solid #f1f5f9;
-            display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap;
-        }
-        .history-item:last-child { border-bottom: none; }
-        .history-item .date { color: #94a3b8; font-size: 12px; white-space: nowrap; }
-        .badge-inc { color: #166534; font-weight: 500; }
-        .total-investments {
-            background: white; padding: 20px 24px; border-radius: 16px; border: 1px solid #e9edf4;
-            display: flex; flex-direction: column; gap: 12px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); margin-bottom: 24px;
-        }
-        .total-investments-top {
-            display: flex; justify-content: space-between; align-items: baseline; gap: 16px;
-        }
-        .total-investments-top .left {
-            display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 12px; min-width: 0;
-        }
-        .total-investments .label { font-size: 18px; font-weight: 600; color: #0f172a; }
-        .total-investments .value {
-            font-size: 28px; font-weight: 700; color: #1d4ed8;
-            text-align: right; white-space: nowrap; line-height: 1.1;
-        }
-        .total-investments .sub { font-size: 14px; color: #64748b; }
-        .total-meta {
-            width: 100%; padding-top: 12px; border-top: 1px solid #eef2f8;
-            font-size: 14px; color: #64748b; line-height: 1.45;
-            display: flex; flex-wrap: wrap; justify-content: flex-start; align-items: center; gap: 8px 20px;
-        }
-        .total-meta > span {
-            display: inline-flex; align-items: center; gap: 4px; min-height: 22px;
-        }
-        .total-meta strong { color: #0f172a; font-weight: 600; }
-        @media (max-width: 640px) {
-            .total-investments-top { flex-direction: column; align-items: flex-start; gap: 6px; }
-            .total-investments .value { text-align: left; }
-        }
-        .apr-positive { color: #166534; }
-        .apr-negative { color: #991b1b; }
-        .stocks-summary { margin-top: 10px; border-top: 1px solid #f1f5f9; }
-        .stocks-summary > .history-toggle {
-            padding: 10px 0; width: 100%;
-        }
-        .stocks-summary > .history-toggle:hover { background: transparent; }
-        .stocks-summary > .history-toggle h3 {
-            font-size: 14px; font-weight: 600; color: #64748b;
-        }
-        .stocks-summary > .history-body {
-            display: none; padding: 0 0 2px; border-top: none;
-        }
-        .stocks-summary.open > .history-body { display: block; }
-        .stocks-summary.open .history-chevron { transform: rotate(180deg); }
-        .mini-summary {
-            margin-top: 4px; padding-top: 4px; border-top: none;
-            display: grid; grid-template-columns: 1fr 1fr; gap: 6px 24px;
-        }
-        .mini-summary .label { font-size: 13px; color: #64748b; }
-        .mini-summary .value { font-size: 15px; font-weight: 600; text-align: right; color: #0f172a; }
-        .mini-summary .value.positive { color: #166534; }
-        .mini-summary .value.negative { color: #991b1b; }
-        .timer-bar {
-            margin-top: 12px; background: #e9edf4; border-radius: 30px; height: 4px; overflow: hidden;
-        }
-        .timer-bar-fill { background: #2563eb; height: 100%; width: 100%; border-radius: 30px; transition: width 1s linear; }
-        .update-line {
-            display: flex; justify-content: space-between; align-items: center; gap: 12px;
-            margin-top: 6px; font-size: 13px; color: #94a3b8; flex-wrap: wrap;
-        }
-        .badge-buy { color: #2563eb; font-weight: 500; }
-        .badge-div { color: #166534; font-weight: 500; }
-        .loading {
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            text-align: center; padding: 30px; color: #64748b; background: white; border-radius: 20px; border: 1px solid #e9edf4;
-        }
-        .loading .spinner-circle {
-            width: 22px; height: 22px; flex-shrink: 0;
-            border: 3px solid #e2e8f0; border-top-color: #2563eb; border-radius: 50%;
-            animation: load-spin 0.7s linear infinite;
-        }
-        @keyframes load-spin { to { transform: rotate(360deg); } }
-        .error { color: #991b1b; background: #fee2e2; padding: 14px 18px; border-radius: 14px; margin-bottom: 20px; border: 1px solid #fecaca; }
-        .footer { margin-top: 12px; font-size: 13px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-        .auth-overlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
-            display: flex; align-items: center; justify-content: center; z-index: 9999;
-        }
-        .auth-overlay.hidden { display: none; }
-        .auth-card {
-            background: white; border-radius: 24px; padding: 36px 32px; width: min(360px, 92vw); text-align: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-        }
-        .auth-card h2 { font-size: 22px; margin-bottom: 6px; }
-        .auth-card p { color: #64748b; margin-bottom: 18px; }
-        .auth-card input {
-            width: 100%; padding: 14px; border: 1px solid #e2e8f0; border-radius: 14px;
-            font-size: 20px; text-align: center; letter-spacing: 6px;
-        }
-        .auth-card .auth-btn {
-            margin-top: 16px; width: 100%; padding: 14px; border: none; border-radius: 40px;
-            background: #2563eb; color: white; font-weight: 600; font-size: 16px; cursor: pointer;
-        }
-        .auth-error { color: #dc2626; font-size: 14px; margin-top: 10px; min-height: 20px; }
-    </style>
+    <link rel="stylesheet" href="invest.css?v=20261103e" />
 </head>
 <body>
     <div class="auth-overlay" id="authOverlay">
@@ -365,6 +42,7 @@
             <span><span class="k">$/₽</span><b id="tapeUsdRub">—</b></span>
             <span><span class="k">$/Br</span><b id="tapeUsdByn">—</b></span>
             <span><span class="k">€/Br</span><b id="tapeEurByn">—</b></span>
+            <span class="src" id="tapeFxSrc" title="Источник курсов"></span>
         </div>
         <div class="alert-banner maturity-alert" id="maturityAlert" aria-live="polite"></div>
         <div id="errorMessage" class="error" style="display:none;"></div>
@@ -417,13 +95,13 @@
                 </div>
             </div>
 
-            <div class="history" id="incomeHistory">
-                <button type="button" class="history-toggle" id="incomeHistoryToggle" aria-expanded="false">
-                    <h3>💵 История выплат <span class="count" id="incomeHistoryCount"></span></h3>
+            <div class="history" id="monthlyPayouts">
+                <button type="button" class="history-toggle" id="monthlyPayoutsToggle" aria-expanded="false">
+                    <h3>📆 Выплаты по месяцам <span class="count" id="monthlyPayoutsCount"></span></h3>
                     <span class="history-chevron" aria-hidden="true">▼</span>
                 </button>
-                <div class="history-body" id="incomeHistoryBody">
-                    <div id="incomeList"></div>
+                <div class="history-body">
+                    <div id="monthlyPayoutsList"></div>
                 </div>
             </div>
 
@@ -455,11 +133,11 @@
 
             <div class="section agenda" id="upcomingMaturities"></div>
 
-            <div class="footer">Sheets · MOEX (задержка 15 мин) · BTC и золото Binance · USD/RUB ЦБ · USD/BYN НБРБ. Выплаты в капитал не входят.</div>
+            <div class="footer">Sheets · курсы BTC / $/₽ / $/Br / GOLD / IMOEX — лист ITOGO (GOOGLEFINANCE). Акции TQBR · €/Br er-api. Выплаты в капитал не входят.</div>
         </div>
     </div>
 
-    <script src="api.js"></script>
+    <script src="api.js?v=20261103b"></script>
     <script>
     (function () {
         const PASSWORD = '906090';
@@ -717,42 +395,210 @@
             return found;
         }
 
+        function fmtRuDate(dt) {
+            const d = String(dt.getDate()).padStart(2, '0');
+            const m = String(dt.getMonth() + 1).padStart(2, '0');
+            return d + '.' + m + '.' + dt.getFullYear();
+        }
+
+        function startOfDay(dt) {
+            return new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+        }
+
+        /**
+         * Календарь выплат (подтверждённый):
+         * - токены/вклады: каждый месяц в фиксированный день, сумма = ср. последних 3
+         * - ВГДО 331: 29.06 / 29.12, ~$38.23 за бумагу × кол-во активных позиций
+         * - HELLO / дивиденды акций: не прогнозируем
+         */
+        const PAYOUT_SCHEDULE = [
+            { match: /вгдо\s*331/, freq: 'semiannual', months: [5, 11], day: 29, fixedPerUnit: 38.23 },
+            { match: /ювилс/, freq: 'monthly', day: 5 },
+            { match: /евротайм\s*ert1|ert1usd27/, freq: 'monthly', day: 10 },
+            { match: /евротайм\s*ert3|ert3usd30/, freq: 'monthly', day: 10 },
+            { match: /hello/, freq: 'skip' },
+            { match: /гурмина/, freq: 'monthly', day: 15 },
+            { match: /бутикавто/, freq: 'monthly', day: 15 },
+            { match: /евротайм\s*\(finstore\)|eurotm/, freq: 'monthly', day: 15 },
+            { match: /такса.*12\.6|капит\.?\s*12\.6/, freq: 'monthly', day: 10 },
+            { match: /такса.*12\.9/, freq: 'monthly', day: 16 },
+            { match: /такса.*14\.5/, freq: 'monthly', day: 18 }
+        ];
+
+        function findSchedule(assetName) {
+            const key = normName(assetName);
+            for (let i = 0; i < PAYOUT_SCHEDULE.length; i++) {
+                if (PAYOUT_SCHEDULE[i].match.test(key)) return PAYOUT_SCHEDULE[i];
+            }
+            return null;
+        }
+
+        function makePayDate(y, m, dom) {
+            const lastDom = new Date(y, m + 1, 0).getDate();
+            return new Date(y, m, Math.min(dom, lastDom));
+        }
+
+        function avgRecentIncome(assetName, income, usdByn, n) {
+            const key = normName(assetName);
+            const amts = [];
+            (income || []).forEach(function (row) {
+                if (normName(row.asset) !== key) return;
+                const usd = rowIncomeUsd(row, usdByn);
+                if (usd) amts.push(usd);
+            });
+            if (!amts.length) return 0;
+            const slice = amts.slice(-(n || 3));
+            return slice.reduce(function (s, x) { return s + x; }, 0) / slice.length;
+        }
+
+        function projectUpcomingPayouts(assets, income, usdByn, fromDate, toDate) {
+            const from = startOfDay(fromDate).getTime();
+            const to = startOfDay(toDate).getTime();
+            const rows = [];
+            const active = (assets || []).filter(function (a) {
+                return String(a.status || 'active') !== 'withdrawn';
+            });
+
+            // Группируем ВГДО в один слот (2 бумаги)
+            const vgdoUnits = active.filter(function (a) {
+                return /вгдо\s*331/i.test(String(a.name || ''));
+            }).length;
+
+            const handled = {};
+
+            active.forEach(function (asset) {
+                const name = asset.name || '';
+                const sched = findSchedule(name);
+                if (!sched || sched.freq === 'skip') return;
+
+                const isVgdo = sched.freq === 'semiannual';
+                const groupKey = isVgdo ? 'vgdo331' : normName(name);
+                if (handled[groupKey]) return;
+                handled[groupKey] = 1;
+
+                const displayName = isVgdo ? 'ВГДО 331 (Айгенис)' : name;
+                const category = asset.category || 'pay';
+                let amount = 0;
+                if (isVgdo) {
+                    amount = (sched.fixedPerUnit || 38.23) * Math.max(vgdoUnits, 1);
+                } else {
+                    amount = avgRecentIncome(name, income, usdByn, 3);
+                    if (!amount && Number(asset.amount_usd) > 0 && Number(asset.rate_pct) > 0) {
+                        amount = Number(asset.amount_usd) * (Number(asset.rate_pct) / 100) / 12;
+                    }
+                }
+                if (!amount) return;
+
+                if (sched.freq === 'monthly') {
+                    let y = fromDate.getFullYear();
+                    let m = fromDate.getMonth();
+                    let cursor = makePayDate(y, m, sched.day);
+                    if (startOfDay(cursor).getTime() < from) {
+                        m += 1;
+                        if (m > 11) { m = 0; y += 1; }
+                        cursor = makePayDate(y, m, sched.day);
+                    }
+                    for (let i = 0; i < 3; i++) {
+                        const t = startOfDay(cursor).getTime();
+                        if (t >= from && t <= to) {
+                            rows.push({
+                                name: displayName,
+                                category: category,
+                                date: fmtRuDate(cursor),
+                                amount: amount,
+                                note: 'по графику',
+                                dt: new Date(cursor.getTime()),
+                                projected: true
+                            });
+                        }
+                        m = cursor.getMonth() + 1;
+                        y = cursor.getFullYear();
+                        if (m > 11) { m = 0; y += 1; }
+                        cursor = makePayDate(y, m, sched.day);
+                    }
+                } else if (sched.freq === 'semiannual') {
+                    const months = sched.months || [5, 11];
+                    for (let y = fromDate.getFullYear(); y <= toDate.getFullYear() + 1; y++) {
+                        months.forEach(function (mo) {
+                            const cursor = makePayDate(y, mo, sched.day);
+                            const t = startOfDay(cursor).getTime();
+                            if (t >= from && t <= to) {
+                                rows.push({
+                                    name: displayName,
+                                    category: category,
+                                    date: fmtRuDate(cursor),
+                                    amount: amount,
+                                    note: 'по графику',
+                                    dt: new Date(cursor.getTime()),
+                                    projected: true
+                                });
+                            }
+                        });
+                    }
+                }
+            });
+
+            return rows;
+        }
+
         function renderMonthPayouts(assets, income, usdByn) {
             const el = document.getElementById('monthPayouts');
             if (!el) return;
             const now = new Date();
-            const y = now.getFullYear();
-            const m = now.getMonth();
+            const from = startOfDay(now);
+            const to = new Date(from.getTime() + 30 * 86400000);
+            const fromTs = from.getTime();
+            const toTs = to.getTime();
             const rows = [];
+            const seen = {};
+
+            function addRow(row) {
+                const key = normName(row.name) + '|' + row.date;
+                if (seen[key]) return;
+                seen[key] = 1;
+                rows.push(row);
+            }
+
+            // 1) Уже записанные выплаты в окне [сегодня … +30 дн]
             (income || []).forEach(function (row) {
                 const dt = parseRuDate(row.date);
-                if (!dt || dt.getFullYear() !== y || dt.getMonth() !== m) return;
+                if (!dt) return;
+                const t = startOfDay(dt).getTime();
+                if (t < fromTs || t > toTs) return;
                 const usd = rowIncomeUsd(row, usdByn);
                 if (!usd && !row.note) return;
                 const asset = findAssetKind(row.asset, assets);
-                rows.push({
+                addRow({
                     name: row.asset || 'Выплата',
                     category: asset ? asset.category : 'pay',
                     date: row.date,
                     amount: usd,
                     note: row.note || '',
-                    dt: dt
+                    dt: dt,
+                    projected: false
                 });
             });
             (market.dividends || []).forEach(function (d) {
                 const dt = parseRuDate(d.date);
-                if (!dt || dt.getFullYear() !== y || dt.getMonth() !== m) return;
+                if (!dt) return;
+                const t = startOfDay(dt).getTime();
+                if (t < fromTs || t > toTs) return;
                 const usd = Number(d.amountUSD) || 0;
                 if (!usd) return;
-                rows.push({
+                addRow({
                     name: (d.name || d.ticker || 'Дивиденд') + (d.ticker ? ' (' + d.ticker + ')' : ''),
                     category: 'div',
                     date: d.date,
                     amount: usd,
                     note: '',
-                    dt: dt
+                    dt: dt,
+                    projected: false
                 });
             });
+
+            // 2) Прогноз по графику прошлых купонов (если в Sheets ещё нет будущих дат)
+            projectUpcomingPayouts(assets, income, usdByn, from, to).forEach(addRow);
+
             rows.sort(function (a, b) { return a.dt.getTime() - b.dt.getTime(); });
             if (!rows.length) {
                 el.className = 'alert-banner payout-alert';
@@ -760,14 +606,20 @@
                 return;
             }
             const total = rows.reduce(function (s, r) { return s + (Number(r.amount) || 0); }, 0);
+            const hasProjected = rows.some(function (r) { return r.projected; });
             el.className = 'alert-banner payout-alert on';
             el.innerHTML =
-                '<div class="alert-title">💵 Выплаты в ' + monthTitleRu(now) + '</div>' +
+                '<div class="alert-title">💵 Выплаты в ближайшие 30 дней' +
+                (hasProjected ? '<span class="demo">по графику</span>' : '') +
+                '</div>' +
                 rows
                     .map(function (r) {
+                        const left = Math.max(0, Math.ceil((startOfDay(r.dt).getTime() - fromTs) / 86400000));
                         return (
                             '<div class="alert-row">' +
                             '<span class="when">' +
+                            (left === 0 ? 'сегодня' : left + ' ' + daysWord(left)) +
+                            ' · ' +
                             escapeHtml(r.date) +
                             '</span>' +
                             '<span class="what">' +
@@ -775,7 +627,8 @@
                             ' <span class="kind">' +
                             escapeHtml(KIND_LABEL[r.category] || r.category) +
                             '</span>' +
-                            (r.note ? ' · ' + escapeHtml(r.note) : '') +
+                            (r.projected ? ' · график' : '') +
+                            (r.note && !r.projected ? ' · ' + escapeHtml(r.note) : '') +
                             '</span>' +
                             '<span class="amt">+$' +
                             fmt(r.amount) +
@@ -783,7 +636,9 @@
                         );
                     })
                     .join('') +
-                '<div class="alert-total"><span>Итого</span><span>+$' + fmt(total) + '</span></div>';
+                '<div class="alert-total"><span>Итого</span><span>+$' +
+                fmt(total) +
+                '</span></div>';
         }
 
         function renderUpcomingMaturities(assets) {
@@ -822,11 +677,31 @@
                     : '<div class="agenda-empty">Нет погашений в окне 30–90 дней.</div>');
         }
 
-        async function fetchUsdByn() {
-            const fx = await HelpersAPI.fetchFxRates({ usdByn: 2.95, eurByn: 3.25 });
+        /** Курсы: приоритет лист ITOGO (GOOGLEFINANCE), иначе er-api. */
+        async function ensureMarketFx() {
+            const fx = await HelpersAPI.fetchAllFx({ usdByn: 2.95, eurByn: 3.25, usdRub: 80.5 });
             window.__fxSource = fx.source;
+            window.__usdRubSource = fx.source;
             market.usdByn = fx.usdByn;
             market.eurByn = fx.eurByn;
+            market.usdRub = fx.usdRub;
+            market.usdRubLive = !!fx.live;
+            market.usdRubSource = fx.source;
+            if (fx.btc > 0) {
+                market.btcPrice = fx.btc;
+                market.btcDayPct = 0;
+                market.btcOk = true;
+            }
+            if (fx.imoex > 0) market.imoex = fx.imoex;
+            if (fx.goldPerGram > 0) {
+                market.itogoGold = { perGram: fx.goldPerGram, dayPct: 0 };
+            }
+            console.log('[FX] invest ensureMarketFx', fx);
+            return fx;
+        }
+
+        async function fetchUsdByn() {
+            const fx = await ensureMarketFx();
             return fx.usdByn;
         }
 
@@ -834,27 +709,48 @@
         const TROY_OZ_G = 31.1034768;
         const GOLD_BUY_USD_OZ = 4900;
         async function fetchGoldQuote() {
+            await ensureMarketFx();
+            if (market.itogoGold && market.itogoGold.perGram > 0) {
+                console.log('[FX] gold from ITOGO', market.itogoGold);
+                return market.itogoGold;
+            }
+            const url = 'https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT';
+            console.log('[FX] → gold/paxg', url);
+            const started = Date.now();
             try {
                 const ctrl = new AbortController();
                 const t = setTimeout(function () { ctrl.abort(); }, 6000);
-                const resp = await fetch(
-                    'https://api.binance.com/api/v3/ticker/24hr?symbol=PAXGUSDT',
-                    { signal: ctrl.signal }
-                );
+                const resp = await fetch(url, { signal: ctrl.signal });
                 clearTimeout(t);
-                if (!resp.ok) throw new Error('paxg_http');
+                if (!resp.ok) throw new Error('paxg_http_' + resp.status);
                 const data = await resp.json();
                 const oz = parseFloat(data.lastPrice);
                 const dayPct = parseFloat(data.priceChangePercent);
                 if (!Number.isFinite(oz) || oz <= 0) throw new Error('paxg_bad');
-                return {
+                const quote = {
                     perGram: oz / TROY_OZ_G,
                     dayPct: Number.isFinite(dayPct) ? dayPct : 0
                 };
+                console.log('[FX] ← gold OK', Date.now() - started + 'ms', quote);
+                return quote;
             } catch (e) {
-                console.warn('Gold quote failed', e);
+                console.warn('[FX] ← gold FAIL', Date.now() - started + 'ms', e);
                 return null;
             }
+        }
+
+        /** Вклады и Ювилс номинированы в BYN: USD = BYN / текущий $/Br (только отображение, в Sheets не пишем). */
+        function revalueBynAssets(assets, usdByn) {
+            if (!(usdByn > 0)) return assets;
+            (assets || []).forEach(function (a) {
+                if (String(a.status || 'active') === 'withdrawn') return;
+                const isDeposit = String(a.category) === 'deposit';
+                const isYowheels = String(a.ticker || '').indexOf('YOWHEELS') === 0;
+                if (!isDeposit && !isYowheels) return;
+                const byn = Number(a.amount_local) > 0 ? Number(a.amount_local) : (isYowheels ? Number(a.count) : 0);
+                if (byn > 0) a.amount_usd = Math.round(byn / usdByn * 100) / 100;
+            });
+            return assets;
         }
 
         function assetMarkUsd(a, goldQuote) {
@@ -1090,12 +986,14 @@
             ],
             dividends: [
                 { ticker: 'SBER', name: 'Сбербанк', amountUSD: 6.56, date: '06.08.2026' },
-                { ticker: 'YDEX', name: 'Яндекс', amountUSD: 6.23, date: '25.09.2026' }
+                { ticker: 'YDEX', name: 'Яндекс', amountUSD: 6.23, date: '25.09.2026' },
+                { ticker: 'TATN', name: 'Татнефть', amountUSD: 10.95, date: '29.10.2026' }
             ],
             btcAmount: 0.01053411,
             btcCost: 860.04,
-            usdRub: 88,
+            usdRub: 80.5,
             usdRubLive: false,
+            usdRubSource: '',
             usdByn: 0,
             eurByn: 0,
             imoex: 0,
@@ -1136,7 +1034,7 @@
 
         function marketFigures() {
             const portfolio = positionsFromTrades(market.trades);
-            const rate = market.usdRub > 0 ? market.usdRub : 88;
+            const rate = market.usdRub > 0 ? market.usdRub : 80.5;
             let costRub = 0;
             let currentRub = 0;
             Object.keys(portfolio).forEach(function (ticker) {
@@ -1171,48 +1069,60 @@
         }
 
         async function fetchUsdRub() {
-            try {
-                const resp = await fetchTimed('https://www.cbr-xml-daily.ru/daily_json.js', 8000);
-                if (!resp.ok) throw new Error('cbr');
-                const data = await resp.json();
-                const value = data && data.Valute && data.Valute.USD && Number(data.Valute.USD.Value);
-                if (value > 0) return value;
-            } catch (e) {
-                console.warn('USD/RUB', e);
-            }
-            return null;
+            const fx = await ensureMarketFx();
+            return { usdRub: fx.usdRub, source: fx.source, live: fx.live };
         }
 
         async function fetchBtcQuote() {
+            await ensureMarketFx();
+            if (market.btcOk && market.btcPrice > 0 && market.usdRubSource === 'ITOGO') {
+                console.log('[FX] btc from ITOGO', market.btcPrice);
+                return { price: market.btcPrice, dayPct: market.btcDayPct || 0 };
+            }
+            const url = 'https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT';
+            console.log('[FX] → btc', url);
+            const started = Date.now();
             try {
-                const resp = await fetchTimed('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT', 8000);
-                if (!resp.ok) throw new Error('btc');
+                const resp = await fetchTimed(url, 8000);
+                if (!resp.ok) throw new Error('btc_http_' + resp.status);
                 const data = await resp.json();
                 const price = parseFloat(data.lastPrice);
                 const day = parseFloat(data.priceChangePercent);
-                if (price > 0) return { price: price, dayPct: Number.isFinite(day) ? day : 0 };
+                if (price > 0) {
+                    console.log('[FX] ← btc OK', Date.now() - started + 'ms', price);
+                    return { price: price, dayPct: Number.isFinite(day) ? day : 0 };
+                }
+                throw new Error('btc_bad_price');
             } catch (e) {
-                console.warn('BTC', e);
+                console.warn('[FX] ← btc FAIL', Date.now() - started + 'ms', e);
             }
             return null;
         }
 
         async function fetchImoex() {
+            await ensureMarketFx();
+            if (market.imoex > 0 && market.usdRubSource === 'ITOGO') {
+                console.log('[FX] imoex from ITOGO', market.imoex);
+                return market.imoex;
+            }
+            const url =
+                'https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX.json?iss.meta=off&iss.only=marketdata';
+            console.log('[FX] → imoex', url);
+            const started = Date.now();
             try {
-                const resp = await fetchTimed(
-                    'https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX.json?iss.meta=off&iss.only=marketdata',
-                    8000
-                );
-                if (!resp.ok) throw new Error('imoex');
+                const resp = await fetchTimed(url, 8000);
+                if (!resp.ok) throw new Error('imoex_http_' + resp.status);
                 const data = await resp.json();
                 const row = data && data.marketdata && data.marketdata.data && data.marketdata.data[0];
-                if (!row) return null;
+                if (!row) throw new Error('imoex_empty');
                 const current = Number(row[4]);
                 const last = Number(row[2]);
                 const value = current > 0 ? current : last;
-                return value > 0 ? value : null;
+                if (!(value > 0)) throw new Error('imoex_bad');
+                console.log('[FX] ← imoex OK', Date.now() - started + 'ms', value);
+                return value;
             } catch (e) {
-                console.warn('IMOEX', e);
+                console.warn('[FX] ← imoex FAIL', Date.now() - started + 'ms', e);
                 return null;
             }
         }
@@ -1228,15 +1138,21 @@
             put('tapeUsdRub', market.usdRubLive ? market.usdRub : 0, 2);
             put('tapeUsdByn', market.usdByn, 4);
             put('tapeEurByn', market.eurByn, 4);
+            const srcEl = document.getElementById('tapeFxSrc');
+            if (srcEl) {
+                srcEl.textContent = market.usdRubSource ? market.usdRubSource : '';
+            }
         }
 
         async function fetchMoexQuotes(tickers) {
             if (!tickers.length) return { priceMap: {}, changeMap: {} };
+            const url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?securities=' +
+                encodeURIComponent(tickers.join(','));
+            console.log('[FX] → moex', tickers.join(','), url);
+            const started = Date.now();
             try {
-                const url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?securities=' +
-                    encodeURIComponent(tickers.join(','));
                 const resp = await fetchTimed(url, 8000);
-                if (!resp.ok) throw new Error('moex');
+                if (!resp.ok) throw new Error('moex_http_' + resp.status);
                 const data = await resp.json();
                 const rows = (data.marketdata && data.marketdata.data) || [];
                 const priceMap = {};
@@ -1250,24 +1166,28 @@
                         changeMap[ticker] = change != null ? Number(change) : 0;
                     }
                 });
+                console.log('[FX] ← moex OK', Date.now() - started + 'ms', 'tickers=' + Object.keys(priceMap).length);
                 return { priceMap: priceMap, changeMap: changeMap };
             } catch (e) {
-                console.warn('MOEX', e);
+                console.warn('[FX] ← moex FAIL', Date.now() - started + 'ms', e);
                 return null;
             }
         }
 
         async function refreshQuotes() {
             const tickers = Object.keys(positionsFromTrades(market.trades));
+            console.log('[FX] refreshQuotes start', { tickers: tickers });
             const loaded = await Promise.all([
                 fetchUsdRub(),
                 fetchBtcQuote(),
                 fetchMoexQuotes(tickers),
                 fetchImoex()
             ]);
-            if (loaded[0]) {
-                market.usdRub = loaded[0];
-                market.usdRubLive = true;
+            const rubRes = loaded[0];
+            if (rubRes && rubRes.usdRub > 0) {
+                market.usdRub = rubRes.usdRub;
+                market.usdRubLive = !!rubRes.live;
+                market.usdRubSource = rubRes.source;
             }
             if (loaded[1]) {
                 market.btcPrice = loaded[1].price;
@@ -1288,8 +1208,20 @@
             });
             if (loaded[3] > 0) market.imoex = loaded[3];
             market.quotesReady = true;
+            const rubNote = market.usdRubSource && market.usdRubSource !== 'cbr'
+                ? ' · $/₽ ' + market.usdRubSource
+                : '';
             market.updatedLabel = 'Обновлено: ' + new Date().toLocaleTimeString('ru-RU') +
-                (market.priceFallback ? ' · часть цен запасная' : '');
+                (market.priceFallback ? ' · часть цен запасная' : '') +
+                rubNote;
+            console.log('[FX] refreshQuotes done', {
+                usdRub: market.usdRub,
+                usdRubLive: market.usdRubLive,
+                usdRubSource: market.usdRubSource,
+                btc: market.btcOk ? market.btcPrice : null,
+                imoex: market.imoex || null,
+                moexFallback: market.priceFallback
+            });
             renderTape();
         }
 
@@ -1513,6 +1445,13 @@
             return dd + '.' + mm + '.' + best.getFullYear();
         }
 
+        function assetById(assets, id) {
+            for (let i = 0; i < (assets || []).length; i++) {
+                if (String(assets[i].id) === String(id)) return assets[i];
+            }
+            return null;
+        }
+
         function render(assets, income, meta, usdByn, goldQuote) {
             const asOfEl = document.getElementById('capitalAsOf');
             if (asOfEl) {
@@ -1594,14 +1533,18 @@
             }
             const dayUsd = earnedAll / daysPassed;
             document.getElementById('incomePerMonth').innerHTML =
-                '<span class="line">За 30 дн (выплаты): +$' + fmt(incomeLast30) +
-                ' · ср. ≈ ' + signedMoney(incomeMonth) + ' / мес · ' +
+                '<div class="col left">' +
+                '<span class="line">За 30 дн (выплаты): +$' + fmt(incomeLast30) + '</span>' +
+                '<span class="line">ср. ≈ ' + signedMoney(incomeMonth) + ' / мес · ' +
                 signedMoney(dayUsd) + ' / день</span>' +
-                '<span class="line">купоны $' + fmt(incomeUsd) +
-                ' · дивиденды $' + fmt(fig.divUsd) + '</span>' +
+                '</div>' +
+                '<div class="col right">' +
+                '<span class="line">купоны $' + fmt(incomeUsd) + '</span>' +
                 '<span class="line">акции ' + signedMoney(stocksPnl, stocksPnlPct) +
-                ' · золото ' + signedMoney(goldPnl, goldQuote && goldCost > 0 ? goldPnlPct : null) +
-                ' · биткоин ' + signedMoney(fig.btcPnl, fig.btcKnown ? btcPnlPct : null) + '</span>';
+                ' · дивиденды $' + fmt(fig.divUsd) + '</span>' +
+                '<span class="line">золото ' + signedMoney(goldPnl, goldQuote && goldCost > 0 ? goldPnlPct : null) + '</span>' +
+                '<span class="line">биткоин ' + signedMoney(fig.btcPnl, fig.btcKnown ? btcPnlPct : null) + '</span>' +
+                '</div>';
             document.getElementById('totalValue').textContent = '$' + fmt(portfolioUsd);
             document.getElementById('totalWithCash').textContent = '$' + fmt(savingsUsd);
             document.getElementById('metaStocks').textContent = '$' + fmt(fig.stocksCurrentUsd);
@@ -1799,25 +1742,50 @@
                 const da = parseRuDate(a.date); const db = parseRuDate(b.date);
                 return (db ? db.getTime() : 0) - (da ? da.getTime() : 0);
             });
-            let incHtml = '';
-            let payCount = 0;
-            displayIncome.forEach(function (row) {
-                const amt = Number(row.amount) || 0;
-                if (!amt && !row.note) return;
-                payCount += 1;
-                const byn = Number(row.amount_byn) || 0;
-                const extra = byn > 0 ? ' · ' + fmt(byn) + ' BYN' : '';
-                const note = row.note ? ' · ' + escapeHtml(row.note) : '';
-                const badge = row.kind === 'div'
-                    ? '<span class="badge-div">Дивиденд</span> '
-                    : '<span class="badge-inc">Выплата</span> ';
-                incHtml +=
-                    '<div class="history-item">' +
-                    '<span>' + badge + escapeHtml(row.asset || '') +
-                    ' — ' + fmt(amt) + ' ' + escapeHtml(row.currency || 'USD') + extra + note + '</span>' +
-                    '<span class="date">' + escapeHtml(row.date || '') + '</span></div>';
-            });
-            document.getElementById('incomeList').innerHTML = incHtml || '<div class="history-item">Пока нет выплат</div>';
+            (function renderMonthlyPayouts() {
+                const MONTHS = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+                const nowTs = Date.now();
+                const groups = {};
+                displayIncome.forEach(function (row) {
+                    const d = parseRuDate(row.date);
+                    const usd = rowIncomeUsd(row, usdByn);
+                    if (!d || !(usd > 0) || d.getTime() > nowTs) return;
+                    const key = d.getFullYear() * 100 + d.getMonth();
+                    const g = groups[key] || (groups[key] = { year: d.getFullYear(), month: d.getMonth(), rows: [], pay: 0, div: 0 });
+                    g.rows.push({ row: row, usd: usd, ts: d.getTime() });
+                    if (row.kind === 'div') g.div += usd; else g.pay += usd;
+                });
+                const keys = Object.keys(groups).sort(function (a, b) { return b - a; });
+                let html = '';
+                keys.forEach(function (key, idx) {
+                    const g = groups[key];
+                    g.rows.sort(function (a, b) { return b.ts - a.ts; });
+                    let rowsHtml = '';
+                    g.rows.forEach(function (r) {
+                        const byn = Number(r.row.amount_byn) || 0;
+                        const cur = String(r.row.currency || 'USD').toUpperCase();
+                        const native = cur === 'BYN' ? fmt(Number(r.row.amount) || 0) + ' BYN' : '';
+                        const extra = native || (byn > 0 ? fmt(byn) + ' BYN' : '');
+                        const badge = r.row.kind === 'div'
+                            ? '<span class="badge-div">Дивиденд</span> '
+                            : '<span class="badge-inc">Купон</span> ';
+                        rowsHtml +=
+                            '<div class="history-item">' +
+                            '<span>' + badge + escapeHtml(r.row.asset || '') +
+                            (extra ? ' <span class="month-extra">· ' + extra + '</span>' : '') + '</span>' +
+                            '<span><strong>+$' + fmt(r.usd) + '</strong> <span class="date">' + escapeHtml(r.row.date || '') + '</span></span></div>';
+                    });
+                    html +=
+                        '<details class="month-block"' + (idx === 0 ? ' open' : '') + '>' +
+                        '<summary><span class="month-name">' + MONTHS[g.month] + ' ' + g.year + '</span>' +
+                        '<span class="month-total">+$' + fmt(g.pay + g.div) + '</span></summary>' +
+                        '<div class="month-split">купоны $' + fmt(g.pay) + ' · дивиденды $' + fmt(g.div) + ' · выплат: ' + g.rows.length + '</div>' +
+                        rowsHtml + '</details>';
+                });
+                document.getElementById('monthlyPayoutsList').innerHTML = html || '<div class="history-item">Пока нет выплат</div>';
+                const cnt = document.getElementById('monthlyPayoutsCount');
+                if (cnt) cnt.textContent = keys.length ? '(' + keys.length + ' мес.)' : '';
+            })();
 
             const tradesSorted = (market.trades || []).slice().sort(function (a, b) {
                 const da = parseRuDate(a.date); const db = parseRuDate(b.date);
@@ -1835,10 +1803,6 @@
             document.getElementById('tradeList').innerHTML = tradeHtml || '<div class="history-item">Сделок нет</div>';
             const tradeCountEl = document.getElementById('tradeHistoryCount');
             if (tradeCountEl) tradeCountEl.textContent = tradesSorted.length ? '(' + tradesSorted.length + ')' : '';
-            const countEl = document.getElementById('incomeHistoryCount');
-            if (countEl) {
-                countEl.textContent = payCount ? '(' + payCount + ')' : '';
-            }
         }
 
         let capitalRows = [];
@@ -2054,7 +2018,7 @@
             });
         }
         setupAccordion('capitalHistory', 'capitalHistoryToggle');
-        setupAccordion('incomeHistory', 'incomeHistoryToggle');
+        setupAccordion('monthlyPayouts', 'monthlyPayoutsToggle');
         setupAccordion('tradeHistory', 'tradeHistoryToggle');
         (function bindCapitalRanges() {
             const box = document.getElementById('capitalRanges');
@@ -2090,6 +2054,7 @@
                 if (refreshFx) {
                     const fx = await Promise.all([fetchUsdByn(), fetchGoldQuote()]);
                     view.usdByn = fx[0];
+                    revalueBynAssets(view.assets, view.usdByn);
                     view.goldQuote = fx[1];
                 }
                 await refreshQuotes();
@@ -2177,6 +2142,7 @@
                 }
             }
 
+            revalueBynAssets(assets, usdByn);
             view = { assets: assets, income: income || [], meta: meta || SEED_META, usdByn: usdByn, goldQuote: goldQuote };
             try {
                 await paint(false);
