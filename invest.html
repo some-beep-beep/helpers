@@ -39,10 +39,10 @@
         <div class="tape" id="marketTape">
             <span><span class="k">IMOEX</span><b id="tapeImoex">—</b></span>
             <span><span class="k">BTC</span><b id="tapeBtc">—</b></span>
+            <span><span class="k">Gold $/г</span><b id="tapeGold">—</b></span>
             <span><span class="k">$/₽</span><b id="tapeUsdRub">—</b></span>
             <span><span class="k">$/Br</span><b id="tapeUsdByn">—</b></span>
             <span><span class="k">€/Br</span><b id="tapeEurByn">—</b></span>
-            <span class="src" id="tapeFxSrc" title="Источник курсов"></span>
         </div>
         <div class="alert-banner maturity-alert" id="maturityAlert" aria-live="polite"></div>
         <div id="errorMessage" class="error" style="display:none;"></div>
@@ -1138,13 +1138,10 @@
             }
             put('tapeImoex', market.imoex, 2);
             put('tapeBtc', market.btcPrice, 0);
+            put('tapeGold', market.goldPerGram, 2);
             put('tapeUsdRub', market.usdRubLive ? market.usdRub : 0, 2);
             put('tapeUsdByn', market.usdByn, 4);
             put('tapeEurByn', market.eurByn, 4);
-            const srcEl = document.getElementById('tapeFxSrc');
-            if (srcEl) {
-                srcEl.textContent = market.usdRubSource ? market.usdRubSource : '';
-            }
         }
 
         async function fetchMoexQuotes(tickers) {
@@ -1456,6 +1453,8 @@
         }
 
         function render(assets, income, meta, usdByn, goldQuote) {
+            market.goldPerGram = goldQuote && goldQuote.perGram > 0 ? goldQuote.perGram : 0;
+            renderTape();
             const asOfEl = document.getElementById('capitalAsOf');
             if (asOfEl) {
                 const stamp = latestCapitalStamp(assets, income);
@@ -1538,8 +1537,8 @@
             document.getElementById('incomePerMonth').innerHTML =
                 '<div class="col left">' +
                 '<span class="line">За 30 дн (выплаты): +$' + fmt(incomeLast30) + '</span>' +
-                '<span class="line">ср. ≈ ' + signedMoney(incomeMonth) + ' / мес · ' +
-                signedMoney(dayUsd) + ' / день</span>' +
+                '<span class="line">ср. ≈ ' + signedMoney(incomeMonth) + ' / мес</span>' +
+                '<span class="line">' + signedMoney(dayUsd) + ' / день</span>' +
                 '</div>' +
                 '<div class="col right">' +
                 '<span class="line">купоны $' + fmt(incomeUsd) + '</span>' +
