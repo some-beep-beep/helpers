@@ -40,10 +40,10 @@ URL Web App **не менять** (лежит в `api.js`).
 2. **Deploy → Manage deployments → ✏️ Edit → New version → Deploy**  
 3. Не делать New deployment (сменится URL)
 
-**Сейчас в локальном `Code.gs` есть чтение листа `ITOGO`.**  
-Пока New version не задеплоен, `?sheet=ITOGO` → `unknown_sheet`, страница падает на er-api.
+**Деплой с чтением листа `ITOGO` сделан** (проверено 16.11.2026: `?sheet=ITOGO` отдаёт `quotes`). После любой правки `Code.gs` деплой нужно повторить.  
+Если New version не выложен, `?sheet=ITOGO` → `unknown_sheet`, страница падает на er-api.
 
-Проверка в консоли браузера: `[FX] bundle source=ITOGO` (успех) или `ITOGO FAIL` / `er-api` (ещё старый деплой).
+Проверка в консоли браузера: `[FX] bundle source=ITOGO` (норма) или `ITOGO FAIL` / `er-api` (старый деплой).
 
 ---
 
@@ -163,7 +163,6 @@ POST на ITOGO запрещён (`itogo_read_only`) — не затирать �
 
 ## Возможные следующие задачи
 
-- [ ] Задеплоить New version `Code.gs` (ITOGO) — иначе прод берёт курсы из er-api.  
 - [ ] Ожидаются выплаты: Такса 14.5% (18.11), ГУРМИНА файнес / finstore, Евротайм и др. в декабре; ВГДО 29.12.  
 - [ ] Telegram-дайджест — `docs/TELEGRAM-DIGEST.md` (код не сделан).  
 - [ ] Логотип в шапку/фавикон (по желанию).  
@@ -180,8 +179,7 @@ POST на ITOGO запрещён (`itogo_read_only`) — не затирать �
 Отвечай по-русски.
 Не коммить/не пушь без явной просьбы.
 
-Важно: курсы с листа ITOGO таблицы
+Курсы идут с листа ITOGO таблицы (деплой Code.gs сделан):
 https://docs.google.com/spreadsheets/d/1eGVr8mF5SCemBEC8jxdFZyG-8eEq6QigdLILv3SnfBs/
-Нужен Deploy → Edit → New version для Code.gs с readItogoQuotes_.
 Код закоммичен и запушен. Данные (выплаты, вклады) — в Google Sheets; формат внесения см. в «Как вносить выплаты».
 ```
