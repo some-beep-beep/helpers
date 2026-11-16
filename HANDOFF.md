@@ -183,5 +183,5 @@ POST на ITOGO запрещён (`itogo_read_only`) — не затирать �
 Важно: курсы с листа ITOGO таблицы
 https://docs.google.com/spreadsheets/d/1eGVr8mF5SCemBEC8jxdFZyG-8eEq6QigdLILv3SnfBs/
 Нужен Deploy → Edit → New version для Code.gs с readItogoQuotes_.
-Локально есть незакоммиченные invest.html / invest.css / api.js / Code.gs.
+Код закоммичен и запушен. Данные (выплаты, вклады) — в Google Sheets; формат внесения см. в «Как вносить выплаты».
 ```
