@@ -30,8 +30,16 @@ const ALLOWED_SHEETS = {
   InvestIncome: ['asset', 'date', 'amount', 'currency', 'amount_byn', 'note'],
   InvestMeta: ['key', 'value'],
   // Одна строка в день: стоимость Invest без НЗ. Повтор за ту же дату клиент не пишет.
-  InvestValue: ['date', 'value_usd']
+  InvestValue: ['date', 'value_usd'],
+  // tools/RA-check_WtoT: история цен Ryanair (пишет GitHub Actions два раза в день).
+  FlightPrices: [
+    'checked_at', 'out_date', 'out_flight', 'out_price_usd',
+    'ret_date', 'ret_flight', 'ret_price_usd', 'pax', 'total_usd', 'note'
+  ]
 };
+
+/** Колонки (1-based), которые держим текстом, чтобы Sheets не превращал их в даты. */
+const TEXT_COLUMNS = { FlightPrices: [1, 2, 3, 5, 6, 10] };
 
 function doGet(e) {
   try {
@@ -299,6 +307,12 @@ function writeSheet_(sheetName, rows) {
     sh.getRange(1, 1, Math.max(rows.length + 1, 2), 1).setNumberFormat('@');
   }
 
+  if (TEXT_COLUMNS[sheetName]) {
+    TEXT_COLUMNS[sheetName].forEach(function (col) {
+      sh.getRange(1, col, Math.max(rows.length + 1, 2), 1).setNumberFormat('@');
+    });
+  }
+
   if (!rows.length) return;
 
   const matrix = rows.map(function (row) {
@@ -325,7 +339,8 @@ function coerce_(sheetName, header, value) {
       amount_usd: true, amount_local: true, count: true, rate_pct: true
     },
     InvestIncome: { amount: true, amount_byn: true },
-    InvestValue: { value_usd: true }
+    InvestValue: { value_usd: true },
+    FlightPrices: { out_price_usd: true, ret_price_usd: true, pax: true, total_usd: true }
   };
 
   if (numericHeaders[sheetName] && numericHeaders[sheetName][header]) {

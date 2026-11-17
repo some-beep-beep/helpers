@@ -1,0 +1,11 @@
+{
+  "origin": "WMI",
+  "destination": "TFS",
+  "origin_name": "Варшава-Модлин",
+  "destination_name": "Тенерифе-Южный",
+  "out_date": "2027-05-22",
+  "ret_date": "2027-06-15",
+  "adults": 2,
+  "children": 1,
+  "currency": "USD"
+}

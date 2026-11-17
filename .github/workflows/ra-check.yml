@@ -1,0 +1,28 @@
+name: RA-check WMI-TFS
+
+# 05:00 и 17:00 UTC = 08:00 и 20:00 по Минску, раз в 12 часов.
+# GitHub может задержать запуск на несколько минут.
+on:
+  schedule:
+    - cron: "0 5,17 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Проверить цены и отправить отчёт
+        env:
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          SHEETS_API_URL: ${{ secrets.SHEETS_API_URL }}
+          SHEETS_API_TOKEN: ${{ secrets.SHEETS_API_TOKEN }}
+        run: python3 tools/RA-check_WtoT/check.py
