@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <title>Invest — весь портфель</title>
-    <link rel="stylesheet" href="invest.css?v=20261103f" />
+    <link rel="stylesheet" href="invest.css?v=20261118a" />
 </head>
 <body>
     <div class="auth-overlay" id="authOverlay">
@@ -1307,6 +1307,7 @@
                 const avgRub = pos.shares > 0 ? pos.cost / pos.shares : 0;
                 cards +=
                     '<div class="card">' +
+                    (fig.currentRub > 0 ? '<span class="share" title="Доля в акциях">' + fmt(currentRub / fig.currentRub * 100, 1) + '%</span>' : '') +
                     '<div class="ticker">' + escapeHtml(ticker) + '</div>' +
                     '<div class="name">' + escapeHtml(name) + ' · ' + shareLabel + ' шт.</div>' +
                     '<div class="price">' + (known ? fmt(price) : '—') + ' <small>₽</small>' +
