@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <title>Invest — весь портфель</title>
-    <link rel="stylesheet" href="invest.css?v=20261118a" />
+    <link rel="stylesheet" href="invest.css?v=20261118c" />
 </head>
 <body>
     <div class="auth-overlay" id="authOverlay">
@@ -1365,6 +1365,7 @@
             const btcPctAbs = market.btcCost > 0 ? Math.abs(fig.btcPnl / market.btcCost) * 100 : 0;
             const btcCard = fig.btcKnown
                 ? '<div class="card">' +
+                  '<span class="share" title="Доля в категории">100%</span>' +
                   '<div class="ticker">₿ BTC</div>' +
                   '<div class="name">Биткоин · ' + fmt(market.btcAmount, 8) + '</div>' +
                   '<div class="price">$' + fmt(fig.btcCurrent) + '</div>' +
@@ -1605,10 +1606,13 @@
                     const earned = earnedForAsset(a, incomeByAsset);
                     // для % от вложений у выведенных берём max(cost, earned) чтобы не делить на 0
                     const costForPct = cost > 0 ? cost : 0;
+                    const shareHtml = (!withdrawn && sum > 0 && mark > 0)
+                        ? '<span class="share" title="Доля в категории">' + fmt(mark / sum * 100, 1) + '%</span>'
+                        : '';
 
                     if (cat === 'cash') {
                         cards +=
-                            '<div class="card">' +
+                            '<div class="card">' + shareHtml +
                             '<div class="ticker">' + escapeHtml(a.name || 'НЗ') + '</div>' +
                             '<div class="name">наличка · резерв</div>' +
                             '<div class="price">$' + fmt(cost) + '</div>' +
@@ -1633,7 +1637,7 @@
                             ? '$' + fmt(mark) + ' <small>$' + fmt(goldQuote.perGram) + '/г</small>'
                             : '$' + fmt(cost);
                         cards +=
-                            '<div class="card' + (withdrawn ? ' withdrawn' : '') + '">' +
+                            '<div class="card' + (withdrawn ? ' withdrawn' : '') + '">' + shareHtml +
                             '<div class="ticker">' + escapeHtml(a.name || '') + '</div>' +
                             '<div class="name">' + escapeHtml(a.ticker || 'GLD') +
                             (count ? ' · ' + fmt(count, 0) + ' г' : '') + '</div>' +
@@ -1666,7 +1670,7 @@
                         : '';
                     const note = a.note ? '<div class="local">' + escapeHtml(a.note) + '</div>' : '';
                     cards +=
-                        '<div class="card' + (withdrawn ? ' withdrawn' : '') + '">' +
+                        '<div class="card' + (withdrawn ? ' withdrawn' : '') + '">' + shareHtml +
                         '<div class="ticker">' + escapeHtml(a.name || '') + '</div>' +
                         '<div class="name">' + escapeHtml(a.ticker || a.category || '') + '</div>' +
                         '<div class="price">$' + fmt(a.amount_usd) + '</div>' +
