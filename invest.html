@@ -957,11 +957,15 @@
             CHMF: 'Северсталь',
             PLZL: 'Полюс',
             HEAD: 'Хэдхантер',
-            VKCO: 'ВК'
+            VKCO: 'ВК',
+            X5: 'ИКС 5',
+            T: 'Т-Технологии',
+            OZON: 'Озон'
         };
         const FALLBACK_PRICES = {
             SBER: 293.01, YDEX: 3434.50, MOEX: 155.38, LKOH: 6059,
-            TATN: 619.10, CHMF: 607, PLZL: 982.20, HEAD: 2790, VKCO: 136.85
+            TATN: 619.10, CHMF: 607, PLZL: 982.20, HEAD: 2790, VKCO: 136.85,
+            X5: 2371, T: 293.56, OZON: 3701
         };
         const market = {
             trades: [
@@ -986,7 +990,10 @@
                 { ticker: 'VKCO', shares: 60, price: 136.85, date: '21.10.2026 15:20' },
                 { ticker: 'MOEX', shares: 10, price: 155.38, date: '21.10.2026 15:23' },
                 { ticker: 'MOEX', shares: 30, price: 155.38, date: '21.10.2026 15:23' },
-                { ticker: 'YDEX', shares: 3, price: 3434.50, date: '21.10.2026 16:57' }
+                { ticker: 'YDEX', shares: 3, price: 3434.50, date: '21.10.2026 16:57' },
+                { ticker: 'X5', shares: 5, price: 2371.00, date: '19.11.2026 03:00' },
+                { ticker: 'T', shares: 19, price: 293.56, date: '19.11.2026 03:00' },
+                { ticker: 'OZON', shares: 3, price: 3701.00, date: '19.11.2026 03:00' }
             ],
             dividends: [
                 { ticker: 'SBER', name: 'Сбербанк', amountUSD: 6.56, date: '06.08.2026' },
