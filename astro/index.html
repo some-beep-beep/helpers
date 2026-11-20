@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <title>Астрофорум — найденные объявления</title>
+    <link rel="stylesheet" href="../invest.css?v=20261120b" />
+    <style>
+        .meta-line { font-size: 14px; color: #64748b; margin: 4px 0 0; }
+        .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+        .stat { background: white; border: 1px solid #e9edf4; border-radius: 14px; padding: 14px 16px; }
+        .stat .k { font-size: 12px; color: #94a3b8; margin-bottom: 4px; }
+        .stat .v { font-size: 22px; font-weight: 700; color: #0f172a; font-variant-numeric: tabular-nums; }
+        .stat.found { background: #f0fdf4; border-color: #bbf7d0; }
+        .stat.found .v { color: #166534; }
+        .stat.check { background: #fffbeb; border-color: #fde68a; }
+        .stat.check .v { color: #92400e; }
+        .stat.bundle .v { color: #1d4ed8; }
+        .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+        .chip {
+            border: 1px solid #e2e8f0; background: #f8fafc; color: #1e293b; border-radius: 40px;
+            padding: 6px 14px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        .chip.on { background: #2563eb; color: white; border-color: #2563eb; }
+        .ads { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .ad {
+            background: white; border: 1px solid #e9edf4; border-radius: 16px; padding: 14px 16px;
+            border-left: 5px solid #cbd5e1;
+        }
+        .ad.found { background: #f0fdf4; border-color: #bbf7d0; border-left-color: #16a34a; }
+        .ad.check { background: #fffbeb; border-color: #fde68a; border-left-color: #f59e0b; }
+        .ad-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 6px; }
+        .tag { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
+        .tag.found { background: #dcfce7; color: #166534; }
+        .tag.check { background: #fef3c7; color: #92400e; }
+        .tag.bundle { background: #dbeafe; color: #1d4ed8; }
+        .tag.rule { background: #f1f5f9; color: #475569; font-weight: 600; }
+        .ad-title { font-size: 16px; font-weight: 700; color: #0f172a; text-decoration: none; display: block; line-height: 1.35; }
+        .ad-title:hover { color: #2563eb; text-decoration: underline; }
+        .ad-sub { font-size: 12px; color: #64748b; margin-top: 4px; }
+        .ad-models { font-size: 13px; color: #1e293b; margin-top: 6px; font-weight: 600; }
+        .ad-snippet { font-size: 13px; color: #475569; margin-top: 6px; line-height: 1.45; }
+        .ad-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-top: 10px; }
+        .ad-price { font-size: 14px; font-weight: 700; color: #0f172a; }
+        .ad-open {
+            font-size: 13px; font-weight: 600; color: #2563eb; text-decoration: none;
+            border: 1px solid #bfdbfe; background: #eff6ff; border-radius: 40px; padding: 5px 14px;
+        }
+        .ad-open:hover { background: #dbeafe; }
+        .state {
+            background: white; border: 1px solid #e9edf4; border-radius: 16px;
+            padding: 28px 20px; text-align: center; color: #64748b; font-size: 14px; line-height: 1.5; margin-bottom: 20px;
+        }
+        .foot-note { font-size: 12px; color: #94a3b8; line-height: 1.5; }
+        @media (max-width: 640px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+    </style>
+</head>
+<body>
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-card">
+            <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+            <h2>Введите код</h2>
+            <p>Доступ к портфелю</p>
+            <input type="password" id="authInput" maxlength="6" placeholder="• • • • • •" />
+            <button class="auth-btn" id="authBtn">▶ Войти</button>
+            <div class="auth-error" id="authError"></div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-logo">📊 <span>Portfolio</span></div>
+        <div class="nav-links">
+            <a href="../plan.html" class="nav-btn plan">📋 Plan</a>
+            <a href="../budget.html" class="nav-btn budget">💰 Budget</a>
+            <a href="../invest.html" class="nav-btn">📈 Invest</a>
+            <a href="../w-to-t/" class="nav-btn">✈️ Tickets</a>
+            <a href="./" class="nav-btn invest">🔭 Astro</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="page-title">
+            <div class="page-title-row">
+                <h1>🔭 Астрофорум</h1>
+                <div class="sync" id="syncStatus">⏳ Загрузка…</div>
+            </div>
+            <div class="meta-line">Доска объявлений · камера на IMX533, колесо фильтров 7–8 поз., Sharpstar 61 EDPH II/III</div>
+        </div>
+
+        <div class="stats" id="stats"></div>
+        <div class="filters" id="filters"></div>
+        <div class="ads" id="ads"></div>
+        <div class="state" id="state" style="display:none;"></div>
+
+        <div class="foot-note">
+            Сюда попадают объявления, которые скрипт нашёл (🎯 точное совпадение, 🔎 проверь вручную) и отправил в Telegram.
+            Новые приходят раз в 5 минут, данные из листа ForumAds. Обновляется само раз в минуту.
+        </div>
+    </div>
+
+    <script src="../api.js?v=20261103b"></script>
+    <script>
+    (function () {
+        const PASSWORD = '906090';
+        const COOKIE_NAME = 'portfolio_auth';
+
+        function getCookie(name) {
+            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : null;
+        }
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            document.cookie = name + '=' + value + ';expires=' + date.toUTCString() + ';path=/';
+        }
+
+        (function auth() {
+            const overlay = document.getElementById('authOverlay');
+            const authInput = document.getElementById('authInput');
+            const authBtn = document.getElementById('authBtn');
+            const authError = document.getElementById('authError');
+            function hide() { overlay.classList.add('hidden'); }
+            function tryLogin() {
+                if (authInput.value.trim() === PASSWORD) {
+                    setCookie(COOKIE_NAME, '1', 30);
+                    hide();
+                } else {
+                    authError.textContent = '❌ Неверный код';
+                    authInput.value = '';
+                    authInput.focus();
+                }
+            }
+            if (getCookie(COOKIE_NAME) === '1') hide();
+            authBtn.addEventListener('click', tryLogin);
+            authInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') { e.preventDefault(); tryLogin(); }
+            });
+        })();
+
+        function escapeHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+                return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+            });
+        }
+        function money(n) {
+            return Number(n).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+        }
+        function parseSeen(s) {
+            const m = /^(\d{2})\.(\d{2})\.(\d{4})\s+(\d{2}):(\d{2})/.exec(String(s || ''));
+            return m ? new Date(+m[3], +m[2] - 1, +m[1], +m[4], +m[5]).getTime() : 0;
+        }
+        // В ссылки пускаем только астрофорум: данные приходят из таблицы, но на всякий случай.
+        function safeUrl(u) {
+            return /^https:\/\/astronomy\.ru\//.test(String(u || '')) ? String(u) : '';
+        }
+
+        let ads = [];
+        let filter = 'all';
+
+        function setState(text) {
+            const el = document.getElementById('state');
+            el.style.display = text ? 'block' : 'none';
+            el.innerHTML = text || '';
+        }
+
+        const FILTERS = [
+            ['all', 'Все'],
+            ['found', '🎯 Найдено'],
+            ['check', '🔎 Проверить'],
+            ['bundle', '📦 Комплекты']
+        ];
+
+        function renderFilters(counts) {
+            document.getElementById('filters').innerHTML = FILTERS.map(function (f) {
+                return '<button type="button" class="chip' + (filter === f[0] ? ' on' : '') + '" data-f="' + f[0] + '">' +
+                    f[1] + ' (' + counts[f[0]] + ')</button>';
+            }).join('');
+        }
+
+        function render() {
+            const counts = {
+                all: ads.length,
+                found: ads.filter(function (a) { return a.level === 'found'; }).length,
+                check: ads.filter(function (a) { return a.level === 'check'; }).length,
+                bundle: ads.filter(function (a) { return a.bundle; }).length
+            };
+            document.getElementById('stats').innerHTML =
+                '<div class="stat"><div class="k">Найдено всего</div><div class="v">' + counts.all + '</div></div>' +
+                '<div class="stat found"><div class="k">🎯 Точное совпадение</div><div class="v">' + counts.found + '</div></div>' +
+                '<div class="stat check"><div class="k">🔎 Проверить вручную</div><div class="v">' + counts.check + '</div></div>' +
+                '<div class="stat bundle"><div class="k">📦 Комплекты</div><div class="v">' + counts.bundle + '</div></div>';
+            renderFilters(counts);
+
+            const shown = ads.filter(function (a) {
+                if (filter === 'found') return a.level === 'found';
+                if (filter === 'check') return a.level === 'check';
+                if (filter === 'bundle') return a.bundle;
+                return true;
+            });
+            const box = document.getElementById('ads');
+            if (!shown.length) {
+                box.innerHTML = '';
+                setState(ads.length
+                    ? 'В этом фильтре пока ничего нет.'
+                    : 'Пока ни одного подходящего объявления.<br>Скрипт смотрит доску каждые 5 минут; когда найдёт нужное, оно придёт в Telegram и появится здесь.');
+                return;
+            }
+            setState('');
+            box.innerHTML = shown.map(function (a) {
+                const url = safeUrl(a.url);
+                const tags =
+                    (a.bundle ? '<span class="tag bundle">📦 КОМПЛЕКТ</span>' : '') +
+                    '<span class="tag ' + a.level + '">' + (a.level === 'found' ? '🎯 НАЙДЕНО' : '🔎 ПРОВЕРЬ ВРУЧНУЮ') + '</span>' +
+                    (a.rules ? a.rules.split(', ').map(function (r) { return '<span class="tag rule">' + escapeHtml(r) + '</span>'; }).join('') : '');
+                const titleHtml = url
+                    ? '<a class="ad-title" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(a.title) + '</a>'
+                    : '<div class="ad-title">' + escapeHtml(a.title) + '</div>';
+                return '<div class="ad ' + a.level + '">' +
+                    '<div class="ad-head">' + tags + '</div>' +
+                    titleHtml +
+                    '<div class="ad-sub">' + escapeHtml([a.author, a.posted].filter(Boolean).join(' · ')) +
+                    ' · найдено ' + escapeHtml(a.seen) + ' · счёт ' + escapeHtml(a.score) + '</div>' +
+                    (a.models ? '<div class="ad-models">' + escapeHtml(a.models) + '</div>' : '') +
+                    (a.snippet ? '<div class="ad-snippet">' + escapeHtml(a.snippet) + '</div>' : '') +
+                    '<div class="ad-foot"><span class="ad-price">' + (a.price ? 'Цена в тексте: ~' + money(a.price) : '') + '</span>' +
+                    (url ? '<a class="ad-open" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">Открыть на форуме →</a>' : '') +
+                    '</div></div>';
+            }).join('');
+        }
+
+        document.getElementById('filters').addEventListener('click', function (e) {
+            const btn = e.target.closest ? e.target.closest('.chip') : null;
+            if (!btn) return;
+            filter = btn.getAttribute('data-f') || 'all';
+            render();
+        });
+
+        async function load() {
+            const sync = document.getElementById('syncStatus');
+            try {
+                const rows = await HelpersAPI.loadSheet('ForumAds');
+                ads = (rows || []).map(function (r) {
+                    return {
+                        id: Number(r.topic_id) || 0,
+                        posted: String(r.posted || ''),
+                        author: String(r.author || ''),
+                        title: String(r.title || ''),
+                        url: String(r.url || ''),
+                        level: r.level === 'found' ? 'found' : 'check',
+                        bundle: String(r.bundle || '').trim() !== '',
+                        rules: String(r.rules || ''),
+                        models: String(r.models || ''),
+                        price: Number(r.price) || 0,
+                        score: r.score === '' || r.score == null ? '' : Number(r.score),
+                        snippet: String(r.snippet || ''),
+                        seen: String(r.seen_at || ''),
+                        ts: parseSeen(r.seen_at)
+                    };
+                }).filter(function (a) { return a.title; });
+                ads.sort(function (a, b) { return (b.ts - a.ts) || (b.id - a.id); });
+                sync.textContent = ads.length ? '☁️ Последнее: ' + ads[0].seen : '☁️ Данных пока нет';
+                sync.style.color = '#166534';
+                render();
+            } catch (e) {
+                sync.textContent = '⚠️ Не удалось загрузить';
+                if (String(e && e.message) === 'unknown_sheet') {
+                    setState('Лист ForumAds ещё не в скрипте.<br>Вставь <b>apps-script/Code.gs</b> и сделай Deploy → Manage deployments → Edit → New version (URL не меняй).');
+                } else {
+                    setState('Не удалось прочитать данные из Google Sheets.');
+                }
+                console.warn('ForumAds', e);
+            }
+        }
+        load();
+        setInterval(load, 60 * 1000);
+    })();
+    </script>
+</body>
+</html>

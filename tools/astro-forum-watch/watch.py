@@ -29,6 +29,7 @@ import match
 
 UA = "astro-forum-watch/1.0 (personal notifier, 1 request per 5 min, respects Crawl-delay)"
 SHEET = "ForumSeen"
+ADS_SHEET = "ForumAds"
 MINSK = timezone(timedelta(hours=3))
 CRAWL_DELAY = 3  # robots.txt: Crawl-delay: 3
 
@@ -175,14 +176,44 @@ def build_message(cfg, topic, body, when, res):
     return "\n".join(lines)
 
 
-def sheets(method, rows=None):
+def ad_row(topic, body, when, res, now):
+    """Строка для листа ForumAds (страница /astro/): только найденные 🎯/🔎."""
+    items = res["items"]
+    level = "found" if any(res[n]["level"] == "found" for n in items) else "check"
+    details = []
+    for n in items:
+        details.extend(res[n]["models"] or res[n]["reasons"])
+    text = body
+    if text.lower().startswith(topic["title"].lower()):
+        text = text[len(topic["title"]):].strip()
+    return {
+        "topic_id": topic["id"], "posted": when, "author": topic.get("author", ""),
+        "title": topic["title"], "url": topic["url"], "level": level,
+        "bundle": "да" if res["bundle"] else "",
+        "rules": ", ".join(match.RULE_NAMES[n] for n in items),
+        "models": "; ".join(dict.fromkeys(details)),
+        "price": res["price"] or "", "score": max(res[n]["score"] for n in items),
+        "snippet": re.sub(r"\s+", " ", text)[:300], "seen_at": now,
+    }
+
+
+def sheets(method, rows=None, sheet=SHEET):
     base = os.environ["SHEETS_API_URL"]
     token = os.environ["SHEETS_API_TOKEN"]
     if method == "GET":
-        data = http_json(f"{base}?token={urllib.parse.quote(token)}&sheet={SHEET}")
+        data = http_json(f"{base}?token={urllib.parse.quote(token)}&sheet={sheet}")
     else:
-        body = json.dumps({"token": token, "sheet": SHEET, "rows": rows}, ensure_ascii=False).encode("utf-8")
-        data = http_json(base, data=body, headers={"Content-Type": "text/plain;charset=utf-8"}, timeout=60)
+        body = json.dumps({"token": token, "sheet": sheet, "rows": rows}, ensure_ascii=False).encode("utf-8")
+        data, last = None, None
+        for attempt in range(3):  # запись нельзя терять: иначе уже отправленное объявление уйдёт ещё раз
+            try:
+                data = http_json(base, data=body, headers={"Content-Type": "text/plain;charset=utf-8"}, timeout=60)
+                break
+            except (urllib.error.URLError, TimeoutError) as err:
+                last = err
+                time.sleep(3 * (attempt + 1))
+        if data is None:
+            raise RuntimeError(f"Sheets не ответил при записи {sheet}: {last}")
     if not data.get("ok"):
         raise RuntimeError(f"Sheets: {data.get('error', data)}")
     return data.get("rows", [])
@@ -229,6 +260,7 @@ def main():
 
     now = datetime.now(MINSK).strftime("%d.%m.%Y %H:%M")
     added = []
+    ads = []
     for t in new:
         if cfg.get("skip_sold", True) and match.is_sold(t["title"]):
             print(f"Пропускаю проданное: {t['id']} {t['title']}")
@@ -255,11 +287,25 @@ def main():
             print(f"Telegram не принял {t['id']}: {err}")
             continue
         added.append({"topic_id": t["id"], "title": t["title"], "url": t["url"], "seen_at": now})
+        if res["level"] != "plain":
+            ads.append(ad_row(t, body, when, res, now))
 
     if added and not dry:
         history.extend(added)
-        history = history[-cfg.get("keep_rows", 400):]
+        # Оставляем темы с самыми большими номерами: именно они попадают в окно «новых».
+        history = sorted(history, key=lambda r: int(r["topic_id"]))[-cfg.get("keep_rows", 1000):]
         sheets("POST", history)
+    if ads and not dry:
+        # Страница /astro/: сбой записи сюда не должен ломать основную работу (повтор не нужен, письмо уже ушло).
+        try:
+            old_ads = sheets("GET", sheet=ADS_SHEET)
+            merged = {int(r["topic_id"]): r for r in old_ads if str(r.get("topic_id", "")).strip() != ""}
+            for a in ads:
+                merged[a["topic_id"]] = a
+            keep = sorted(merged.values(), key=lambda r: int(r["topic_id"]))[-cfg.get("keep_ads", 300):]
+            sheets("POST", keep, sheet=ADS_SHEET)
+        except Exception as err:  # noqa: BLE001
+            print(f"Не удалось записать найденные в {ADS_SHEET}: {err}")
     return 0
 
 

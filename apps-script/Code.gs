@@ -37,11 +37,16 @@ const ALLOWED_SHEETS = {
     'ret_date', 'ret_flight', 'ret_price_usd', 'pax', 'total_usd', 'note'
   ],
   // tools/astro-forum-watch: уже отправленные в Telegram темы Астрофорума.
-  ForumSeen: ['topic_id', 'title', 'url', 'seen_at']
+  ForumSeen: ['topic_id', 'title', 'url', 'seen_at'],
+  // Найденные объявления (🎯/🔎) для страницы /astro/: пишет tools/astro-forum-watch.
+  ForumAds: [
+    'topic_id', 'posted', 'author', 'title', 'url', 'level', 'bundle',
+    'rules', 'models', 'price', 'score', 'snippet', 'seen_at'
+  ]
 };
 
 /** Колонки (1-based), которые держим текстом, чтобы Sheets не превращал их в даты. */
-const TEXT_COLUMNS = { FlightPrices: [1, 2, 3, 5, 6, 10], ForumSeen: [2, 3, 4] };
+const TEXT_COLUMNS = { FlightPrices: [1, 2, 3, 5, 6, 10], ForumSeen: [2, 3, 4], ForumAds: [2, 3, 4, 5, 6, 7, 8, 9, 12, 13] };
 
 function doGet(e) {
   try {
@@ -343,7 +348,8 @@ function coerce_(sheetName, header, value) {
     InvestIncome: { amount: true, amount_byn: true },
     InvestValue: { value_usd: true },
     FlightPrices: { out_price_usd: true, ret_price_usd: true, pax: true, total_usd: true },
-    ForumSeen: { topic_id: true }
+    ForumSeen: { topic_id: true },
+    ForumAds: { topic_id: true, price: true, score: true }
   };
 
   if (numericHeaders[sheetName] && numericHeaders[sheetName][header]) {

@@ -3,7 +3,7 @@
   "snippet_chars": 500,
   "max_per_run": 15,
   "recent_id_window": 3000,
-  "keep_rows": 400,
+  "keep_rows": 1000,
   "post_all": true,
   "skip_sold": true,
   "rules": {
