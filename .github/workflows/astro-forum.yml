@@ -1,0 +1,35 @@
+name: Astro forum watch
+
+# Раз в 5 минут (минимум, который позволяет GitHub Actions). Запуск может опаздывать
+# на несколько минут, а при высокой нагрузке GitHub иногда пропускает отдельные запуски.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Два запуска одновременно не нужны: иначе одно объявление уйдёт в Telegram дважды.
+concurrency:
+  group: astro-forum
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Проверить новые объявления
+        env:
+          FORUM_TG_BOT_TOKEN: ${{ secrets.FORUM_TG_BOT_TOKEN }}
+          FORUM_TG_CHAT_ID: ${{ secrets.FORUM_TG_CHAT_ID }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          SHEETS_API_URL: ${{ secrets.SHEETS_API_URL }}
+          SHEETS_API_TOKEN: ${{ secrets.SHEETS_API_TOKEN }}
+        run: python3 tools/astro-forum-watch/watch.py
