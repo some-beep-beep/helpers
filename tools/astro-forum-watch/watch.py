@@ -25,6 +25,8 @@ from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 
+import match
+
 UA = "astro-forum-watch/1.0 (personal notifier, 1 request per 5 min, respects Crawl-delay)"
 SHEET = "ForumSeen"
 MINSK = timezone(timedelta(hours=3))
@@ -133,23 +135,33 @@ def fetch_post(url):
     return fp.text(), post_time(page)
 
 
-def matches(cfg, text):
-    low = text.lower()
-    return [k["label"] for k in cfg["keywords"] if re.search(k["pattern"], low)]
-
-
 def esc(s):
     return html.escape(s, quote=False)
 
 
-def build_message(cfg, topic, body, when, hits):
+def rule_line(name, r):
+    label = match.RULE_NAMES[name]
+    detail = ", ".join(r["models"] or r["reasons"]) or label
+    if r["level"] == "found":
+        return f"🎯 <b>НАЙДЕНО ({esc(label)}): {esc(detail)}</b> (счёт {r['score']})"
+    return f"🔎 <b>Проверь вручную ({esc(label)}): {esc(detail)}</b> (счёт {r['score']})"
+
+
+def build_message(cfg, topic, body, when, res):
     lines = []
-    if hits:
-        lines.append("🔥 <b>Совпадение: " + esc(", ".join(hits)) + "</b>")
+    if res["bundle"]:
+        names = " + ".join(match.RULE_NAMES[n] for n in res["items"])
+        lines.append("📦 <b>КОМПЛЕКТ, высокий приоритет: " + esc(names) + "</b>")
+    for name in res["items"]:
+        lines.append(rule_line(name, res[name]))
+    if any(res[n]["ambiguous"] for n in res["items"]):
+        lines.append("⚠️ В тексте есть и подходящая модель, и исключение (цветная/другая модель): смотри текст")
     lines.append("🔭 <b>" + esc(topic["title"]) + "</b>")
     meta = " · ".join(x for x in (topic.get("author"), when) if x)
     if meta:
         lines.append(esc(meta))
+    if res["price"]:
+        lines.append(f"Цена в тексте: ~{res['price']:,} ₽".replace(",", " "))
     if body.lower().startswith(topic["title"].lower()):
         body = body[len(topic["title"]):].strip()
     snippet = body[: cfg.get("snippet_chars", 500)].strip()
@@ -218,16 +230,24 @@ def main():
     now = datetime.now(MINSK).strftime("%d.%m.%Y %H:%M")
     added = []
     for t in new:
+        if cfg.get("skip_sold", True) and match.is_sold(t["title"]):
+            print(f"Пропускаю проданное: {t['id']} {t['title']}")
+            if not dry:
+                added.append({"topic_id": t["id"], "title": t["title"], "url": t["url"], "seen_at": now})
+            continue
         time.sleep(CRAWL_DELAY)
         try:
             body, when = fetch_post(t["url"])
         except RuntimeError as err:
             print(f"Пропускаю {t['id']} до следующего запуска: {err}")
             continue
-        hits = matches(cfg, f"{t['title']}\n{body}")
-        text = build_message(cfg, t, body, when, hits)
+        res = match.analyze(t["title"], body, cfg)
+        text = build_message(cfg, t, body, when, res)
         print("\n" + text)
         if dry:
+            continue
+        if res["level"] == "plain" and not cfg.get("post_all", True):
+            added.append({"topic_id": t["id"], "title": t["title"], "url": t["url"], "seen_at": now})
             continue
         try:
             send_telegram(text)
