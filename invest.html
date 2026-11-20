@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <title>Invest — весь портфель</title>
-    <link rel="stylesheet" href="invest.css?v=20261118c" />
+    <link rel="stylesheet" href="invest.css?v=20261120a" />
 </head>
 <body>
     <div class="auth-overlay" id="authOverlay">
@@ -1295,6 +1295,17 @@
             }, 1000);
         }
 
+        /** Вторая строка шапки актива: заработал/потерял за всё время, $ и % от текущей стоимости. */
+        function headResultHtml(amount, base) {
+            if (!Number.isFinite(amount) || Math.abs(amount) < 0.005) return '';
+            const pos = amount >= 0;
+            const sign = pos ? '+' : '−';
+            const pct = base > 0 ? ' (' + sign + fmt(Math.abs(amount) / base * 100, 1) + '%)' : '';
+            return '<div class="head-result ' + (pos ? 'positive' : 'negative') + '">' +
+                (pos ? 'Заработал за всё время: ' : 'Потерял за всё время: ') +
+                sign + '$' + fmt(Math.abs(amount)) + pct + '</div>';
+        }
+
         function renderMarketHtml(fig, portfolioUsd) {
             const tickers = Object.keys(fig.portfolio);
             let cards = '';
@@ -1344,7 +1355,8 @@
                     '<span class="title">📈 Акции</span>' +
                     '<span class="head-meta"><span class="earned">MOEX · ' +
                     (usdPos ? '+' : '−') + '$' + fmt(Math.abs(stocksPnlUsd)) + '</span>' +
-                    '<span class="sub">$' + fmt(fig.stocksCurrentUsd) + ' · ' + fmt(stocksPct, 1) + '%</span></span></div>' +
+                    '<span class="sub">$' + fmt(fig.stocksCurrentUsd) + ' · ' + fmt(stocksPct, 1) + '%</span></span>' +
+                    headResultHtml(stocksPnlUsd + fig.divUsd, fig.stocksCurrentUsd) + '</div>' +
                     '<div class="card-grid">' + cards + '</div>' +
                     '<div class="stocks-summary' + (stocksSummaryOpen ? ' open' : '') + '" id="stocksSummary">' +
                     '<button type="button" class="history-toggle" id="stocksSummaryToggle" aria-expanded="' +
@@ -1391,7 +1403,8 @@
             html +=
                 '<div class="section"><div class="section-header">' +
                 '<span class="title">₿ Биткоин</span>' +
-                '<span class="head-meta"><span class="sub">$' + fmt(fig.btcCurrent) + ' · ' + fmt(btcPct, 1) + '%</span></span></div>' +
+                '<span class="head-meta"><span class="sub">$' + fmt(fig.btcCurrent) + ' · ' + fmt(btcPct, 1) + '%</span></span>' +
+                (fig.btcKnown ? headResultHtml(fig.btcPnl, fig.btcCurrent) : '') + '</div>' +
                 '<div class="card-grid">' + btcCard + '</div>' +
                 '<div class="mini-summary">' +
                 '<div><span class="label">Цена BTC</span></div><div><span class="value">' +
@@ -1716,7 +1729,14 @@
                     '<div class="section"><div class="section-header">' +
                     '<span class="title">' + (CAT_TITLE[cat] || cat) + '</span>' +
                     '<span class="head-meta">' + earnedHtml +
-                    '<span class="sub">$' + fmt(sum) + ' · ' + fmt(pct, 1) + '%</span></span></div>' +
+                    '<span class="sub">$' + fmt(sum) + ' · ' + fmt(pct, 1) + '%</span></span>' +
+                    (cat === 'cash' ? '' : headResultHtml(
+                        cat === 'gold'
+                            ? sum - rows.filter(function (a) { return String(a.status) !== 'withdrawn'; })
+                                .reduce(function (s, a) { return s + (Number(a.amount_usd) || 0); }, 0)
+                            : earnedCat,
+                        sum)) +
+                    '</div>' +
                     '<div class="card-grid">' + cards + '</div></div>';
             });
             if (!marketInserted) sectionsHtml += renderMarketHtml(fig, portfolioUsd);

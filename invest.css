@@ -111,8 +111,15 @@ h1 { font-size: 26px; margin: 0; font-weight: 600; flex: 0 0 auto; }
 }
 .section-header {
     display: flex; justify-content: space-between; align-items: baseline;
-    margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; gap: 12px;
+    margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #f1f5f9; gap: 4px 12px;
+    flex-wrap: wrap;
 }
+.section-header .head-result {
+    flex: 0 0 100%; text-align: right; font-size: 13px; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.section-header .head-result.positive { color: #166534; }
+.section-header .head-result.negative { color: #991b1b; }
 .section-header .title { font-size: 18px; font-weight: 700; color: #0f172a; min-width: 0; }
 .section-header .head-meta {
     margin-left: auto; display: flex; align-items: baseline; justify-content: flex-end;
