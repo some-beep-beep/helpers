@@ -220,5 +220,20 @@ class HelpersTests(unittest.TestCase):
         self.assertIsNone(match.extract_price("5 выходов /1 вход 12 В 5,5*2,1 до 8 А. 12В/4А, M48-M42, 2шт."))
 
 
+class WeakSignalTests(unittest.TestCase):
+    def test_bare_imx533_and_533mm(self):
+        self.assertEqual(match.analyze("Куплю", "что-то с IMX533")["level"], "check")
+        self.assertEqual(match.analyze("Продам", "533MM")["level"], "check")
+
+    def test_generic_wheel_and_sharpstar(self):
+        self.assertEqual(match.analyze("Продам колесо фильтров", "")["wheel"]["level"], "check")
+        self.assertEqual(match.analyze("Sharpstar телескоп", "")["level"], "check")
+
+    def test_still_excluded(self):
+        self.assertEqual(match.analyze("Продам 533MC", "цветная")["level"], "plain")
+        self.assertEqual(match.analyze("Sharpstar 76EDPH телескоп", "")["level"], "plain")
+        self.assertEqual(match.analyze("Продам колесо фильтров ручное", "")["level"], "plain")
+
+
 if __name__ == "__main__":
     unittest.main()

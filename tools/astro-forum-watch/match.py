@@ -147,6 +147,14 @@ def analyze_camera(ru, mix, lat, price, rule_cfg):
         reasons.append("asi533/qhy533 без суффикса M/C")
     if re.search(r"svbony.{0,40}?533", lat):
         reasons.append("Svbony на 533")
+    # слабые сигналы: лучше лишнее уведомление, чем пропуск
+    if not colors and not reasons:
+        if re.search(r"imx\s?533", lat):
+            reasons.append("упоминается IMX533")
+        elif re.search(r"(?<![\d.,])533\s?(?:mm|m)(?![a-z0-9])", lat):
+            reasons.append("533M/MM без бренда")
+        elif re.search(r"(?<![\d.,])533(?![\d.,])", lat):
+            reasons.append("число 533 в тексте (проверить)")
     bonus = 0
     if re.search(CAMERA_BONUS_PRO, f"{ru} {lat}"):
         bonus += 4
@@ -191,6 +199,8 @@ def analyze_wheel(ru, mix, lat, price, rule_cfg, camera):
     reasons = [name for name, pat in WHEEL_B if re.search(pat, lat) or re.search(pat, mix)]
     if re.search(WHEEL_POSITIONS, both) and re.search(WHEEL_WORD, both):
         reasons.append("7-8 позиций + колесо")
+    if not models and not reasons and re.search(r"колес\w*\s+фильтр|filter\s?wheel|колесо\s+(?:для\s+)?фильтр", both):
+        reasons.append("колесо фильтров (проверить число позиций)")
     excluded = bool(models or reasons) and bool(_search_any(WHEEL_EXCLUDE, both))
     bonus = 0
     if re.search(WHEEL_FILTERS, both):
@@ -224,6 +234,8 @@ def analyze_scope(ru, mix, lat, price, rule_cfg):
     reasons = [name for name, pat in SCOPE_B if re.search(pat, lat)]
     if re.search(r"sharpstar", lat) and re.search(r"61\s?mm.{0,15}(?:apo|ed|refractor|рефрактор)", both):
         reasons.append("Sharpstar 61 мм рефрактор")
+    if not models and not reasons and re.search(r"sharp\s?star", lat) and re.search(SCOPE_WORDS, both):
+        reasons.append("Sharpstar (проверить модель)")
     excluded = bool(_search_any(SCOPE_OTHER, lat))
     accessory_only = bool(re.search(SCOPE_ACCESSORY, both)) and not re.search(SCOPE_WORDS, both)
     bonus = 4 if re.search(SCOPE_BONUS, both) else 0
