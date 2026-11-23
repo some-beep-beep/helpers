@@ -4,7 +4,7 @@
   "max_per_run": 15,
   "recent_id_window": 3000,
   "keep_rows": 1000,
-  "post_all": true,
+  "post_all": false,
   "skip_sold": true,
   "rules": {
     "camera": {

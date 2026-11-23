@@ -177,9 +177,15 @@ def build_message(cfg, topic, body, when, res):
 
 
 def ad_row(topic, body, when, res, now):
-    """Строка для листа ForumAds (страница /astro/): только найденные 🎯/🔎."""
+    """Строка для листа ForumAds (страница /astro/): всё, что ушло в Telegram.
+
+    level: found (🎯), check (🔎) или plain (обычное объявление, приходит только при post_all=true).
+    """
     items = res["items"]
-    level = "found" if any(res[n]["level"] == "found" for n in items) else "check"
+    if items:
+        level = "found" if any(res[n]["level"] == "found" for n in items) else "check"
+    else:
+        level = "plain"
     details = []
     for n in items:
         details.extend(res[n]["models"] or res[n]["reasons"])
@@ -192,7 +198,7 @@ def ad_row(topic, body, when, res, now):
         "bundle": "да" if res["bundle"] else "",
         "rules": ", ".join(match.RULE_NAMES[n] for n in items),
         "models": "; ".join(dict.fromkeys(details)),
-        "price": res["price"] or "", "score": max(res[n]["score"] for n in items),
+        "price": res["price"] or "", "score": max((res[n]["score"] for n in items), default=""),
         "snippet": re.sub(r"\s+", " ", text)[:300], "seen_at": now,
     }
 
@@ -287,8 +293,7 @@ def main():
             print(f"Telegram не принял {t['id']}: {err}")
             continue
         added.append({"topic_id": t["id"], "title": t["title"], "url": t["url"], "seen_at": now})
-        if res["level"] != "plain":
-            ads.append(ad_row(t, body, when, res, now))
+        ads.append(ad_row(t, body, when, res, now))  # на страницу /astro/ идёт всё, что ушло в Telegram
 
     if added and not dry:
         history.extend(added)
@@ -296,7 +301,7 @@ def main():
         history = sorted(history, key=lambda r: int(r["topic_id"]))[-cfg.get("keep_rows", 1000):]
         sheets("POST", history)
     if ads and not dry:
-        # Страница /astro/: сбой записи сюда не должен ломать основную работу (повтор не нужен, письмо уже ушло).
+        # Страница /astro/: сбой записи сюда не должен ломать основную работу (сообщение в Telegram уже ушло).
         try:
             old_ads = sheets("GET", sheet=ADS_SHEET)
             merged = {int(r["topic_id"]): r for r in old_ads if str(r.get("topic_id", "")).strip() != ""}

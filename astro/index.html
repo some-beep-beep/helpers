@@ -30,10 +30,12 @@
         }
         .ad.found { background: #f0fdf4; border-color: #bbf7d0; border-left-color: #16a34a; }
         .ad.check { background: #fffbeb; border-color: #fde68a; border-left-color: #f59e0b; }
+        .ad.plain { background: white; }
         .ad-head { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-bottom: 6px; }
         .tag { font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 9px; white-space: nowrap; }
         .tag.found { background: #dcfce7; color: #166534; }
         .tag.check { background: #fef3c7; color: #92400e; }
+        .tag.plain { background: #f1f5f9; color: #64748b; }
         .tag.bundle { background: #dbeafe; color: #1d4ed8; }
         .tag.rule { background: #f1f5f9; color: #475569; font-weight: 600; }
         .ad-title { font-size: 16px; font-weight: 700; color: #0f172a; text-decoration: none; display: block; line-height: 1.35; }
@@ -94,8 +96,8 @@
         <div class="state" id="state" style="display:none;"></div>
 
         <div class="foot-note">
-            Сюда попадают объявления, которые скрипт нашёл (🎯 точное совпадение, 🔎 проверь вручную) и отправил в Telegram.
-            Новые приходят раз в 5 минут, данные из листа ForumAds. Обновляется само раз в минуту.
+            Сюда попадает всё, что скрипт отправил в Telegram: 🎯 точное совпадение, 🔎 проверь вручную и, если включён режим «слать все», обычные объявления.
+            Новые приходят раз в 5 минут, данные из листа ForumAds. Страница обновляется сама раз в минуту.
         </div>
     </div>
 
@@ -168,11 +170,14 @@
             ['all', 'Все'],
             ['found', '🎯 Найдено'],
             ['check', '🔎 Проверить'],
-            ['bundle', '📦 Комплекты']
+            ['bundle', '📦 Комплекты'],
+            ['plain', 'Прочие']
         ];
 
         function renderFilters(counts) {
-            document.getElementById('filters').innerHTML = FILTERS.map(function (f) {
+            document.getElementById('filters').innerHTML = FILTERS.filter(function (f) {
+                return f[0] !== 'plain' || counts.plain > 0;  // «Прочие» только если такие есть (при post_all=true)
+            }).map(function (f) {
                 return '<button type="button" class="chip' + (filter === f[0] ? ' on' : '') + '" data-f="' + f[0] + '">' +
                     f[1] + ' (' + counts[f[0]] + ')</button>';
             }).join('');
@@ -183,19 +188,22 @@
                 all: ads.length,
                 found: ads.filter(function (a) { return a.level === 'found'; }).length,
                 check: ads.filter(function (a) { return a.level === 'check'; }).length,
-                bundle: ads.filter(function (a) { return a.bundle; }).length
+                bundle: ads.filter(function (a) { return a.bundle; }).length,
+                plain: ads.filter(function (a) { return a.level === 'plain'; }).length
             };
             document.getElementById('stats').innerHTML =
-                '<div class="stat"><div class="k">Найдено всего</div><div class="v">' + counts.all + '</div></div>' +
+                '<div class="stat"><div class="k">Всего в Telegram</div><div class="v">' + counts.all + '</div></div>' +
                 '<div class="stat found"><div class="k">🎯 Точное совпадение</div><div class="v">' + counts.found + '</div></div>' +
                 '<div class="stat check"><div class="k">🔎 Проверить вручную</div><div class="v">' + counts.check + '</div></div>' +
                 '<div class="stat bundle"><div class="k">📦 Комплекты</div><div class="v">' + counts.bundle + '</div></div>';
+            if (filter === 'plain' && !counts.plain) filter = 'all';
             renderFilters(counts);
 
             const shown = ads.filter(function (a) {
                 if (filter === 'found') return a.level === 'found';
                 if (filter === 'check') return a.level === 'check';
                 if (filter === 'bundle') return a.bundle;
+                if (filter === 'plain') return a.level === 'plain';
                 return true;
             });
             const box = document.getElementById('ads');
@@ -211,7 +219,7 @@
                 const url = safeUrl(a.url);
                 const tags =
                     (a.bundle ? '<span class="tag bundle">📦 КОМПЛЕКТ</span>' : '') +
-                    '<span class="tag ' + a.level + '">' + (a.level === 'found' ? '🎯 НАЙДЕНО' : '🔎 ПРОВЕРЬ ВРУЧНУЮ') + '</span>' +
+                    '<span class="tag ' + a.level + '">' + (a.level === 'found' ? '🎯 НАЙДЕНО' : (a.level === 'check' ? '🔎 ПРОВЕРЬ ВРУЧНУЮ' : 'ОБЫЧНОЕ')) + '</span>' +
                     (a.rules ? a.rules.split(', ').map(function (r) { return '<span class="tag rule">' + escapeHtml(r) + '</span>'; }).join('') : '');
                 const titleHtml = url
                     ? '<a class="ad-title" href="' + escapeHtml(url) + '" target="_blank" rel="noopener noreferrer">' + escapeHtml(a.title) + '</a>'
@@ -247,7 +255,7 @@
                         author: String(r.author || ''),
                         title: String(r.title || ''),
                         url: String(r.url || ''),
-                        level: r.level === 'found' ? 'found' : 'check',
+                        level: r.level === 'found' ? 'found' : (r.level === 'plain' ? 'plain' : 'check'),
                         bundle: String(r.bundle || '').trim() !== '',
                         rules: String(r.rules || ''),
                         models: String(r.models || ''),
