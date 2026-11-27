@@ -192,9 +192,8 @@ function sheetNames_(ss) {
 }
 
 /**
- * Цены акций из вкладки «Цены MOEX» таблицы INVEST (ручной ввод).
- * Сервер Apps Script не ходит в сеть: iss.moex.com недоступен из-за сертификата,
- * а GOOGLEFINANCE не отдаёт котировки MOEX.
+ * Цены акций MOEX: основной источник — прокси exchange.technoquant.ru (тот же, что в GET_PRICE),
+ * кэш 60 с. Если прокси не ответил, берём цену с вкладки «Цены MOEX» таблицы INVEST.
  * tickers — строка "SBER,PLZL,..." (только латиница/цифры, до 40 штук).
  * Возвращает { prices: { TICKER: { last, dayPct } }, imoex }.
  */
@@ -208,26 +207,53 @@ function readMoexQuotes_(tickersParam) {
   const out = { prices: {}, imoex: null };
   if (!list.length) return out;
 
-  // Цены лежат на вкладке «Цены MOEX» таблицы INVEST (ручной ввод: тикер | цена в ₽).
-  var sh = null;
-  try {
-    sh = SpreadsheetApp.openById(ITOGO_SPREADSHEET_ID).getSheetByName('Цены MOEX');
-  } catch (e) {
-    throw new Error('missing_sheet:Цены MOEX; ' + String(e && e.message ? e.message : e));
-  }
-  if (!sh) throw new Error('missing_sheet:Цены MOEX');
-
-  const last = sh.getLastRow();
-  if (last < 2) return out;
-  const rows = sh.getRange(2, 1, last - 1, 2).getValues();
-  rows.forEach(function (row) {
-    const ticker = String(row[0] || '').trim().toUpperCase();
-    const price = Number(row[1]);
-    if (ticker && list.indexOf(ticker) !== -1 && isFinite(price) && price > 0) {
-      // Изменение за день не ведётся вручную: 0.
+  const cache = CacheService.getScriptCache();
+  const missing = [];
+  list.forEach(function (ticker) {
+    const cached = cache.get('px_' + ticker);
+    if (cached && Number(cached) > 0) {
+      out.prices[ticker] = { last: Number(cached), dayPct: 0 };
+      return;
+    }
+    let price = null;
+    try {
+      const resp = UrlFetchApp.fetch('https://exchange.technoquant.ru/stock/' + encodeURIComponent(ticker), {
+        method: 'get',
+        muteHttpExceptions: true
+      });
+      if (resp.getResponseCode() === 200) {
+        const data = JSON.parse(resp.getContentText());
+        if (data && Number(data.price) > 0) price = Number(data.price);
+      }
+    } catch (e) {
+      price = null;
+    }
+    if (price) {
+      cache.put('px_' + ticker, String(price), 60);
       out.prices[ticker] = { last: price, dayPct: 0 };
+    } else {
+      missing.push(ticker);
     }
   });
+
+  // Запасной источник: вручную заполненная вкладка «Цены MOEX».
+  if (missing.length) {
+    try {
+      const sh = SpreadsheetApp.openById(ITOGO_SPREADSHEET_ID).getSheetByName('Цены MOEX');
+      const last = sh ? sh.getLastRow() : 1;
+      if (last >= 2) {
+        sh.getRange(2, 1, last - 1, 2).getValues().forEach(function (row) {
+          const ticker = String(row[0] || '').trim().toUpperCase();
+          const price = Number(row[1]);
+          if (ticker && missing.indexOf(ticker) !== -1 && price > 0 && !out.prices[ticker]) {
+            out.prices[ticker] = { last: price, dayPct: 0 };
+          }
+        });
+      }
+    } catch (e) {
+      // Вкладки нет или недоступна — просто не отдаём эти тикеры.
+    }
+  }
 
   return out;
 }
