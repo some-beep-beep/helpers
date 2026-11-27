@@ -34,6 +34,32 @@
   }
 
   /**
+   * Котировки MOEX через Apps Script (не зависит от сети/сертификата в браузере).
+   * Returns { prices: { TICKER: { last, dayPct } }, imoex } or null.
+   */
+  async function loadMoexQuotes(tickers) {
+    const list = (tickers || []).filter(Boolean).join(',');
+    const url =
+      API_URL +
+      '?token=' +
+      encodeURIComponent(API_TOKEN) +
+      '&sheet=MOEX&tickers=' +
+      encodeURIComponent(list);
+    console.log('[FX] → MOEX via Apps Script', list);
+    const started = Date.now();
+    try {
+      const resp = await fetch(url, { method: 'GET', redirect: 'follow' });
+      const data = await parseJsonResponse(resp);
+      if (!data.ok) throw new Error(data.error || 'moex_failed');
+      console.log('[FX] ← MOEX via Apps Script OK', Date.now() - started + 'ms');
+      return data.quotes || null;
+    } catch (e) {
+      console.warn('[FX] ← MOEX via Apps Script FAIL', Date.now() - started + 'ms', e && e.message ? e.message : e);
+      return null;
+    }
+  }
+
+  /**
    * Курсы из листа ITOGO (GOOGLEFINANCE / GLD / IMOEX в шапке таблицы).
    * Returns { btc, usdByn, usdRub, imoex, goldPerGram } or null if unavailable.
    */
@@ -218,6 +244,7 @@
     API_URL: API_URL,
     loadSheet: loadSheet,
     loadItogoQuotes: loadItogoQuotes,
+    loadMoexQuotes: loadMoexQuotes,
     saveSheet: saveSheet,
     fetchAllFx: fetchAllFx,
     fetchFxRates: fetchFxRates,

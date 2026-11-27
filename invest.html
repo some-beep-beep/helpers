@@ -139,7 +139,7 @@
         </div>
     </div>
 
-    <script src="api.js?v=20261103b"></script>
+    <script src="api.js?v=20261127a"></script>
     <script>
     (function () {
         const PASSWORD = '906090';
@@ -1117,6 +1117,10 @@
                 console.log('[FX] imoex from ITOGO', market.imoex);
                 return market.imoex;
             }
+            if (market.imoexApi > 0) {
+                console.log('[FX] imoex from Apps Script', market.imoexApi);
+                return market.imoexApi;
+            }
             const url =
                 'https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX.json?iss.meta=off&iss.only=marketdata';
             console.log('[FX] → imoex', url);
@@ -1155,6 +1159,21 @@
 
         async function fetchMoexQuotes(tickers) {
             if (!tickers.length) return { priceMap: {}, changeMap: {} };
+            // Сначала через Apps Script (сервер Google): не зависит от сети и сертификата в браузере.
+            if (window.HelpersAPI && HelpersAPI.loadMoexQuotes) {
+                const viaApi = await HelpersAPI.loadMoexQuotes(tickers);
+                if (viaApi && viaApi.prices && Object.keys(viaApi.prices).length) {
+                    const priceMap = {};
+                    const changeMap = {};
+                    Object.keys(viaApi.prices).forEach(function (t) {
+                        priceMap[t] = Number(viaApi.prices[t].last);
+                        changeMap[t] = Number(viaApi.prices[t].dayPct) || 0;
+                    });
+                    if (viaApi.imoex > 0) market.imoexApi = viaApi.imoex;
+                    return { priceMap: priceMap, changeMap: changeMap };
+                }
+            }
+            // Запасной путь: прямой запрос к ISS из браузера.
             const url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json?securities=' +
                 encodeURIComponent(tickers.join(','));
             console.log('[FX] → moex', tickers.join(','), url);

@@ -64,6 +64,10 @@ function doGet(e) {
     if (sheetName === 'ITOGO') {
       return json_(200, { ok: true, sheet: 'ITOGO', quotes: readItogoQuotes_() });
     }
+    // Котировки MOEX (TQBR + IMOEX) запрашиваются сервером Apps Script, а не браузером.
+    if (sheetName === 'MOEX') {
+      return json_(200, { ok: true, sheet: 'MOEX', quotes: readMoexQuotes_(e.parameter.tickers) });
+    }
     if (!ALLOWED_SHEETS[sheetName]) {
       return json_(400, { ok: false, error: 'unknown_sheet', sheet: sheetName });
     }
@@ -185,6 +189,74 @@ function findItogoSheet_(ss) {
 
 function sheetNames_(ss) {
   return ss.getSheets().map(function (s) { return s.getName(); });
+}
+
+/**
+ * Цены акций TQBR и индекс IMOEX с ISS Мосбиржи (запрос делает Apps Script).
+ * tickers — строка "SBER,PLZL,..." (только латиница/цифры, до 40 штук).
+ * Возвращает { prices: { TICKER: { last, dayPct } }, imoex }.
+ */
+function readMoexQuotes_(tickersParam) {
+  const list = String(tickersParam || '')
+    .split(',')
+    .map(function (t) { return t.trim().toUpperCase(); })
+    .filter(function (t) { return /^[A-Z0-9]{1,12}$/.test(t); })
+    .slice(0, 40);
+
+  function getJson_(url) {
+    const resp = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    if (resp.getResponseCode() !== 200) throw new Error('moex_http_' + resp.getResponseCode());
+    return JSON.parse(resp.getContentText());
+  }
+
+  // Индекс `col`-колонки по имени из ISS-блока marketdata.
+  function colIndex_(columns, names) {
+    for (var i = 0; i < names.length; i++) {
+      var idx = columns.indexOf(names[i]);
+      if (idx !== -1) return idx;
+    }
+    return -1;
+  }
+
+  const out = { prices: {}, imoex: null };
+
+  if (list.length) {
+    const url = 'https://iss.moex.com/iss/engines/stock/markets/shares/boards/TQBR/securities.json' +
+      '?iss.meta=off&iss.only=marketdata&marketdata.columns=SECID,LAST,LASTTOPREVPRICE' +
+      '&securities=' + encodeURIComponent(list.join(','));
+    const md = (getJson_(url).marketdata) || {};
+    const cols = md.columns || [];
+    const iSec = colIndex_(cols, ['SECID']);
+    const iLast = colIndex_(cols, ['LAST']);
+    const iPct = colIndex_(cols, ['LASTTOPREVPRICE']);
+    (md.data || []).forEach(function (row) {
+      const ticker = iSec >= 0 ? row[iSec] : null;
+      const last = iLast >= 0 ? row[iLast] : null;
+      if (ticker && last != null && isFinite(Number(last))) {
+        out.prices[ticker] = {
+          last: Number(last),
+          dayPct: iPct >= 0 && row[iPct] != null ? Number(row[iPct]) : 0
+        };
+      }
+    });
+  }
+
+  try {
+    const idx = getJson_('https://iss.moex.com/iss/engines/stock/markets/index/boards/SNDX/securities/IMOEX.json' +
+      '?iss.meta=off&iss.only=marketdata&marketdata.columns=CURRENTVALUE,LASTVALUE');
+    const im = idx.marketdata || {};
+    const row = (im.data || [])[0];
+    if (row) {
+      const iCur = colIndex_(im.columns || [], ['CURRENTVALUE']);
+      const iLast = colIndex_(im.columns || [], ['LASTVALUE']);
+      const cur = iCur >= 0 ? Number(row[iCur]) : 0;
+      const last = iLast >= 0 ? Number(row[iLast]) : 0;
+      out.imoex = cur > 0 ? cur : (last > 0 ? last : null);
+    }
+  } catch (err) {
+    out.imoex = null;
+  }
+  return out;
 }
 
 function readItogoQuotes_() {
