@@ -139,7 +139,7 @@
         </div>
     </div>
 
-    <script src="api.js?v=20261127a"></script>
+    <script src="api.js?v=20261127b"></script>
     <script>
     (function () {
         const PASSWORD = '906090';
@@ -1235,6 +1235,7 @@
                 }
             });
             if (loaded[3] > 0) market.imoex = loaded[3];
+            else if (market.imoexApi > 0) market.imoex = market.imoexApi;
             market.quotesReady = true;
             const rubNote = market.usdRubSource && market.usdRubSource !== 'cbr'
                 ? ' · $/₽ ' + market.usdRubSource

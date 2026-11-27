@@ -192,8 +192,9 @@ function sheetNames_(ss) {
 }
 
 /**
- * Цены акций MOEX: основной источник — прокси exchange.technoquant.ru (тот же, что в GET_PRICE),
- * кэш 60 с. Если прокси не ответил, берём цену с вкладки «Цены MOEX» таблицы INVEST.
+ * Котировки MOEX (акции TQBR + индекс IMOEX) с ISS по HTTP: по HTTPS серверы Google
+ * не принимают сертификат MOEX, а по HTTP те же публичные данные отдаются без него.
+ * Результат кэшируется на 60 с. Если ISS не ответил, цены берём с вкладки «Цены MOEX».
  * tickers — строка "SBER,PLZL,..." (только латиница/цифры, до 40 штук).
  * Возвращает { prices: { TICKER: { last, dayPct } }, imoex }.
  */
@@ -204,45 +205,73 @@ function readMoexQuotes_(tickersParam) {
     .filter(function (t) { return /^[A-Z0-9]{1,12}$/.test(t); })
     .slice(0, 40);
 
-  const out = { prices: {}, imoex: null };
-  if (!list.length) return out;
-
   const cache = CacheService.getScriptCache();
-  const missing = [];
-  list.forEach(function (ticker) {
-    const cached = cache.get('px_' + ticker);
-    if (cached && Number(cached) > 0) {
-      out.prices[ticker] = { last: Number(cached), dayPct: 0 };
-      return;
-    }
-    let price = null;
-    try {
-      const resp = UrlFetchApp.fetch('https://exchange.technoquant.ru/stock/' + encodeURIComponent(ticker), {
-        method: 'get',
-        muteHttpExceptions: true
-      });
-      if (resp.getResponseCode() === 200) {
-        const data = JSON.parse(resp.getContentText());
-        if (data && Number(data.price) > 0) price = Number(data.price);
-      }
-    } catch (e) {
-      price = null;
-    }
-    if (price) {
-      cache.put('px_' + ticker, String(price), 60);
-      out.prices[ticker] = { last: price, dayPct: 0 };
-    } else {
-      missing.push(ticker);
-    }
-  });
+  const cacheKey = 'moex_' + Utilities.base64Encode(
+    Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, list.join(',')));
+  const cached = cache.get(cacheKey);
+  if (cached) {
+    try { return JSON.parse(cached); } catch (e) { /* пересчитаем */ }
+  }
 
-  // Запасной источник: вручную заполненная вкладка «Цены MOEX».
+  const out = { prices: {}, imoex: null };
+
+  function iss_(path) {
+    const resp = UrlFetchApp.fetch('http://iss.moex.com/iss/' + path, {
+      muteHttpExceptions: true,
+      headers: { 'User-Agent': 'Mozilla/5.0' }
+    });
+    if (resp.getResponseCode() !== 200) throw new Error('moex_http_' + resp.getResponseCode());
+    return JSON.parse(resp.getContentText()).marketdata || {};
+  }
+
+  if (list.length) {
+    try {
+      const md = iss_('engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off&iss.only=marketdata' +
+        '&marketdata.columns=SECID,LAST,LCURRENTPRICE,LASTTOPREVPRICE&securities=' + encodeURIComponent(list.join(',')));
+      const cols = md.columns || [];
+      const iSec = cols.indexOf('SECID');
+      const iLast = cols.indexOf('LAST');
+      const iCur = cols.indexOf('LCURRENTPRICE');
+      const iPct = cols.indexOf('LASTTOPREVPRICE');
+      (md.data || []).forEach(function (row) {
+        const ticker = iSec >= 0 ? row[iSec] : null;
+        const last = iLast >= 0 ? Number(row[iLast]) : 0;
+        const cur = iCur >= 0 ? Number(row[iCur]) : 0;
+        const price = last > 0 ? last : cur;
+        if (ticker && price > 0) {
+          out.prices[ticker] = {
+            last: price,
+            dayPct: iPct >= 0 && row[iPct] != null ? Number(row[iPct]) : 0
+          };
+        }
+      });
+    } catch (e) {
+      // ISS недоступен — ниже подставим цены с вкладки.
+    }
+  }
+
+  try {
+    const im = iss_('engines/stock/markets/index/securities/IMOEX.json?iss.meta=off&iss.only=marketdata' +
+      '&marketdata.columns=CURRENTVALUE,LASTVALUE');
+    const row = (im.data || [])[0];
+    if (row) {
+      const icols = im.columns || [];
+      const cur = Number(row[icols.indexOf('CURRENTVALUE')]);
+      const last = Number(row[icols.indexOf('LASTVALUE')]);
+      out.imoex = cur > 0 ? cur : (last > 0 ? last : null);
+    }
+  } catch (e) {
+    out.imoex = null;
+  }
+
+  // Запасной источник для тикеров, которых ISS не вернул: вкладка «Цены MOEX» таблицы INVEST.
+  const missing = list.filter(function (t) { return !out.prices[t]; });
   if (missing.length) {
     try {
       const sh = SpreadsheetApp.openById(ITOGO_SPREADSHEET_ID).getSheetByName('Цены MOEX');
-      const last = sh ? sh.getLastRow() : 1;
-      if (last >= 2) {
-        sh.getRange(2, 1, last - 1, 2).getValues().forEach(function (row) {
+      const lastRow = sh ? sh.getLastRow() : 1;
+      if (lastRow >= 2) {
+        sh.getRange(2, 1, lastRow - 1, 2).getValues().forEach(function (row) {
           const ticker = String(row[0] || '').trim().toUpperCase();
           const price = Number(row[1]);
           if (ticker && missing.indexOf(ticker) !== -1 && price > 0 && !out.prices[ticker]) {
@@ -251,18 +280,12 @@ function readMoexQuotes_(tickersParam) {
         });
       }
     } catch (e) {
-      // Вкладки нет или недоступна — просто не отдаём эти тикеры.
+      // Вкладки нет или недоступна — эти тикеры просто не отдаём.
     }
   }
 
+  if (Object.keys(out.prices).length) cache.put(cacheKey, JSON.stringify(out), 60);
   return out;
-}
-
-/**
- * Запусти эту функцию в редакторе (▶) — только для проверки; разрешение на сеть больше не нужно.
- */
-function authorizeMoex() {
-  return readMoexQuotes_('SBER');
 }
 
 function readItogoQuotes_() {
