@@ -13,7 +13,7 @@
       "price_max": null
     },
     "wheel": {
-      "enabled": true,
+      "enabled": false,
       "price_min": null,
       "price_max": null
     },
